@@ -568,10 +568,47 @@
     }
 
     function getPlacementRect(end, dir) {
-      if (dir === 'right') return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
-      if (dir === 'left') return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
-      if (dir === 'up') return { x: end.x - GAME.tileH / 2, y: end.y - GAME.tileW, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
-      return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+      // Стыковка должна идти ребром конкретной картинки.
+      // Для поворотов используем координаты так, чтобы совпадали именно края половинок.
+      const halfW = GAME.tileW / 2;
+
+      if (end.side === 'right') {
+        if (dir === 'right') {
+          return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+        }
+        if (dir === 'up') {
+          return { x: end.x - GAME.tileH / 2, y: end.y - halfW - GAME.tileH, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+        }
+        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+      }
+
+      if (end.side === 'left') {
+        if (dir === 'left') {
+          return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+        }
+        if (dir === 'up') {
+          return { x: end.x - GAME.tileH / 2, y: end.y - halfW - GAME.tileH, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+        }
+        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+      }
+
+      if (end.side === 'top') {
+        if (dir === 'up') {
+          return { x: end.x - GAME.tileH / 2, y: end.y - GAME.tileW, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+        }
+        if (dir === 'left') {
+          return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+        }
+        return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+      }
+
+      if (dir === 'down') {
+        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+      }
+      if (dir === 'left') {
+        return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+      }
+      return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
     }
 
     function showSnapsForDrag(tile) {
