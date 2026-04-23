@@ -661,32 +661,49 @@
     }
 
     function resetEndpointsFromPlaced() {
-      const all = [];
-      for (const tile of GAME.placed) {
-        all.push(...getTileEndpoints(tile));
+  const all = [];
+
+  for (const tile of GAME.placed) {
+    all.push(...getTileEndpoints(tile));
+  }
+
+  const used = new Set();
+
+  for (let i = 0; i < all.length; i++) {
+    for (let j = i + 1; j < all.length; j++) {
+      if (all[i].value !== all[j].value) continue;
+
+      const a = all[i];
+      const b = all[j];
+
+      const horizontalTouch =
+        a.cellY === b.cellY &&
+        Math.abs(a.cellX - b.cellX) === 1 &&
+        (
+          (a.side === 'right' && b.side === 'left') ||
+          (a.side === 'left' && b.side === 'right')
+        );
+
+      const verticalTouch =
+        a.cellX === b.cellX &&
+        Math.abs(a.cellY - b.cellY) === 1 &&
+        (
+          (a.side === 'bottom' && b.side === 'top') ||
+          (a.side === 'top' && b.side === 'bottom')
+        );
+
+      if (horizontalTouch || verticalTouch) {
+        used.add(`${a.tileId}:${a.side}:${a.cellX}:${a.cellY}`);
+        used.add(`${b.tileId}:${b.side}:${b.cellX}:${b.cellY}`);
       }
-
-      const used = new Set();
-      for (let i = 0; i < all.length; i++) {
-        for (let j = i + 1; j < all.length; j++) {
-          if (all[i].value !== all[j].value) continue;
-
-          const touches =
-            (all[i].side === 'right'  && all[j].side === 'left'   && all[i].cellX + 1 === all[j].cellX && all[i].cellY === all[j].cellY) ||
-            (all[i].side === 'left'   && all[j].side === 'right'  && all[i].cellX - 1 === all[j].cellX && all[i].cellY === all[j].cellY) ||
-            (all[i].side === 'bottom' && all[j].side === 'top'    && all[i].cellY + 1 === all[j].cellY && all[i].cellX === all[j].cellX) ||
-            (all[i].side === 'top'    && all[j].side === 'bottom' && all[i].cellY - 1 === all[j].cellY && all[i].cellX === all[j].cellX);
-
-          if (touches) {
-            used.add(`${all[i].tileId}:${all[i].side}`);
-            used.add(`${all[j].tileId}:${all[j].side}`);
-          }
-        }
-      }
-
-      GAME.endpoints = all.filter(e => !used.has(`${e.tileId}:${e.side}`));
     }
+  }
 
+  GAME.endpoints = all.filter(e => {
+    const key = `${e.tileId}:${e.side}:${e.cellX}:${e.cellY}`;
+    return !used.has(key);
+  });
+}
     // ИЗМЕНЕНО: служебные функции для автоперехода хода и конца игры
     function otherPlayer(player) {
       return player === 1 ? 2 : 1;
@@ -837,6 +854,15 @@
     }
 
     function placementFor(endpoint, dir, tile) {
+// 🚫 запрещаем ставить "назад" в цепочку
+if (
+  (endpoint.side === 'right' && dir === 'left') ||
+  (endpoint.side === 'left' && dir === 'right') ||
+  (endpoint.side === 'top' && dir === 'down') ||
+  (endpoint.side === 'bottom' && dir === 'up')
+) {
+  return null;
+}
       const occupied = buildOccupiedSet();
 
       let orientation = 'H';
