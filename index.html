@@ -22,7 +22,6 @@
       --strip-h: 110px;
       --tile-w: 132px;
       --tile-h: 66px;
-      --tile-gap: 6px;
     }
 
     * { box-sizing: border-box; }
@@ -42,9 +41,7 @@
       width: 100vw;
     }
 
-    .left, .right, .strip {
-      background: var(--panel-bg);
-    }
+    .left, .right, .strip { background: var(--panel-bg); }
 
     .left {
       padding: 18px;
@@ -81,10 +78,7 @@
       line-height: 1;
     }
 
-    .bank-label {
-      opacity: .8;
-      margin-top: 8px;
-    }
+    .bank-label { opacity: .8; margin-top: 8px; }
 
     .btn {
       border: 0;
@@ -145,7 +139,6 @@
       background: var(--board-bg);
       overflow: hidden;
     }
-
     .board-viewport {
       position: absolute;
       inset: 0;
@@ -153,7 +146,6 @@
       cursor: grab;
     }
     .board-viewport.panning { cursor: grabbing; }
-
     .board-canvas {
       position: absolute;
       left: 0;
@@ -241,7 +233,7 @@
       position: absolute;
       border: 2px solid var(--snap-color);
       border-radius: 12px;
-      background: color-mix(in srgb, var(--snap-color) 20%, transparent);
+      background: color-mix(in srgb, var(--snap-color) 10%, transparent);
       pointer-events: none;
       opacity: 0;
       transition: opacity .08s ease;
@@ -290,7 +282,6 @@
     }
     .face-map {
       display: grid;
-      grid-template-columns: 1fr;
       gap: 10px;
     }
     .face-item {
@@ -312,40 +303,15 @@
       font-size: 26px;
       overflow: hidden;
     }
-    .face-preview img {
-      max-width: 80%;
-      max-height: 80%;
-      object-fit: contain;
-    }
-    .small-note {
-      font-size: 12px;
-      opacity: .75;
-      line-height: 1.35;
-      margin-top: 4px;
-    }
-    .editor-btn {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 2px solid var(--button-bg);
-      background: rgba(255,255,255,.2);
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
+    .face-preview img { max-width: 80%; max-height: 80%; object-fit: contain; }
+    .small-note { font-size: 12px; opacity: .75; line-height: 1.35; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="app">
     <aside class="left">
       <div class="turn" id="turnLabel">Ход: Игрок 1</div>
-      <div class="bank">
-        <div>
-          <div class="bank-count" id="bankCount">14</div>
-          <div class="bank-label">В банке</div>
-        </div>
-      </div>
+      <div class="bank"><div><div class="bank-count" id="bankCount">14</div><div class="bank-label">В банке</div></div></div>
       <button class="btn primary" id="drawBtn">Взять из банка</button>
       <button class="btn secondary" id="passBtn">Пропустить ход</button>
       <button class="btn secondary" id="shuffleBtn">Перемешать</button>
@@ -357,51 +323,32 @@
     </aside>
 
     <main class="center">
-      <section class="strip top" id="player2Strip">
-        <div class="strip-title">ИГРОК 2</div>
-      </section>
-      <section class="board-shell">
-        <div class="board-viewport" id="viewport">
-          <div class="board-canvas" id="canvas"></div>
-        </div>
-      </section>
-      <section class="strip bottom" id="player1Strip">
-        <div class="strip-title">ИГРОК 1</div>
-      </section>
+      <section class="strip top" id="player2Strip"><div class="strip-title">ИГРОК 2</div></section>
+      <section class="board-shell"><div class="board-viewport" id="viewport"><div class="board-canvas" id="canvas"></div></div></section>
+      <section class="strip bottom" id="player1Strip"><div class="strip-title">ИГРОК 1</div></section>
     </main>
 
     <aside class="right">
       <div class="panel-title">Редактор оформления</div>
-
       <div class="group">
         <h3>Фоны</h3>
         <label class="row"><span>Фон страницы</span><input type="color" data-var="--page-bg" value="#e7b1ae"></label>
         <label class="row"><span>Цвет игрового поля</span><input type="color" data-var="--board-bg" value="#f3f3f3"></label>
         <label class="row"><span>Фон панели</span><input type="color" data-var="--panel-bg" value="#9fb0a3"></label>
       </div>
-
       <div class="group">
         <h3>Интерфейс</h3>
         <label class="row"><span>Цвет кнопок</span><input type="color" data-var="--button-bg" value="#6c33ff"></label>
         <label class="row"><span>Цвет текста кнопок</span><input type="color" data-var="--button-text" value="#ffffff"></label>
         <label class="row"><span>Общий цвет текста</span><input type="color" data-var="--text-color" value="#111111"></label>
-        <div class="row" style="grid-template-columns:1fr;">
-          <select id="fontSelect">
-            <option value='"DM Sans", Arial, sans-serif'>DM Sans</option>
-            <option value='Arial, sans-serif'>Arial</option>
-            <option value='Verdana, sans-serif'>Verdana</option>
-            <option value='"Trebuchet MS", sans-serif'>Trebuchet MS</option>
-          </select>
-        </div>
+        <div class="row" style="grid-template-columns:1fr;"><select id="fontSelect"><option value='"DM Sans", Arial, sans-serif'>DM Sans</option><option value='Arial, sans-serif'>Arial</option><option value='Verdana, sans-serif'>Verdana</option><option value='"Trebuchet MS", sans-serif'>Trebuchet MS</option></select></div>
       </div>
-
       <div class="group">
         <h3>Плитка домино</h3>
         <label class="row"><span>Фон плитки</span><input type="color" data-var="--tile-bg" value="#d8c8c8"></label>
         <label class="row"><span>Цвет разделительной линии</span><input type="color" data-var="--tile-divider" value="#666666"></label>
         <label class="row"><span>Цвет границы плитки</span><input type="color" data-var="--tile-border" value="#ece7e7"></label>
       </div>
-
       <div class="group">
         <h3>Картинки граней</h3>
         <div class="face-map" id="faceMap"></div>
@@ -445,13 +392,13 @@
       startPanY: 0,
       tileW: 132,
       tileH: 66,
+      snapThickness: 10,
       currentPlayer: 1,
       bank: [],
       hands: {1: [], 2: []},
       placed: [],
       nextId: 1,
-      activeSnaps: [],
-      dragged: null
+      activeSnaps: []
     };
 
     const ALL_TILES = [
@@ -505,21 +452,18 @@
     }
 
     function createTile(a, b) {
-      return { id: 't' + (GAME.nextId++), a, b, orientation: 'horizontal', x: 0, y: 0, placed: false, element: null };
+      return { id: 't' + (GAME.nextId++), a, b, orientation: 'horizontal', x: 0, y: 0, placed: false, element: null, player: 1 };
     }
 
     function swapFaces(tile) {
       [tile.a, tile.b] = [tile.b, tile.a];
-      const aEl = tile.element.querySelector('.face-a');
-      const bEl = tile.element.querySelector('.face-b');
-      renderFace(aEl, tile.a);
-      renderFace(bEl, tile.b);
+      renderFace(tile.element.querySelector('.face-a'), tile.a);
+      renderFace(tile.element.querySelector('.face-b'), tile.b);
     }
 
     function applyOrientation(tile, orientation) {
       tile.orientation = orientation;
       tile.element.classList.toggle('vertical', orientation === 'vertical');
-      tile.element.classList.toggle('mini', false);
     }
 
     function getTileSize(orientation) {
@@ -533,40 +477,33 @@
       const s = getTileSize(orientation);
       if (orientation === 'horizontal') {
         return {
-          left:  { value: a, x, y: y + s.h / 2, side: 'left', axis: 'horizontal' },
-          right: { value: b, x: x + s.w, y: y + s.h / 2, side: 'right', axis: 'horizontal' }
+          left: { tileId: tile.id, side: 'left', value: a, x, y: y + s.h / 2 },
+          right:{ tileId: tile.id, side: 'right', value: b, x: x + s.w, y: y + s.h / 2 }
         };
       }
       return {
-        top:    { value: a, x: x + s.w / 2, y, side: 'top', axis: 'vertical' },
-        bottom: { value: b, x: x + s.w / 2, y: y + s.h, side: 'bottom', axis: 'vertical' }
+        top:    { tileId: tile.id, side: 'top', value: a, x: x + s.w / 2, y },
+        bottom: { tileId: tile.id, side: 'bottom', value: b, x: x + s.w / 2, y: y + s.h }
       };
     }
 
-    function endpointId(tileId, side) { return `${tileId}:${side}`; }
-
     function computeOpenEndpoints() {
       const all = [];
-      const occupied = new Set();
       for (const tile of GAME.placed) {
-        const map = getEndpoints(tile);
-        for (const side of Object.keys(map)) {
-          const e = map[side];
-          all.push({ tileId: tile.id, ...e });
-        }
+        const ends = getEndpoints(tile);
+        all.push(...Object.values(ends));
       }
-      const threshold = 8;
+      const used = new Set();
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           if (all[i].value !== all[j].value) continue;
-          const close = Math.abs(all[i].x - all[j].x) <= threshold && Math.abs(all[i].y - all[j].y) <= threshold;
-          if (close) {
-            occupied.add(endpointId(all[i].tileId, all[i].side));
-            occupied.add(endpointId(all[j].tileId, all[j].side));
+          if (Math.abs(all[i].x - all[j].x) <= 4 && Math.abs(all[i].y - all[j].y) <= 4) {
+            used.add(`${all[i].tileId}:${all[i].side}`);
+            used.add(`${all[j].tileId}:${all[j].side}`);
           }
         }
       }
-      return all.filter(e => !occupied.has(endpointId(e.tileId, e.side)));
+      return all.filter(e => !used.has(`${e.tileId}:${e.side}`));
     }
 
     function renderHands() {
@@ -576,7 +513,7 @@
         GAME.hands[player].forEach(tile => {
           if (!tile.element) tile.element = createDominoElement(tile, true);
           tile.element.className = 'domino mini in-hand';
-          tile.element.classList.remove('vertical');
+          tile.element.classList.remove('vertical', 'locked');
           renderFace(tile.element.querySelector('.face-a'), tile.a);
           renderFace(tile.element.querySelector('.face-b'), tile.b);
           enableDrag(tile);
@@ -587,53 +524,47 @@
       GAME.bankCount.textContent = String(GAME.bank.length);
     }
 
-    function addSnapZone(x, y, w, h) {
-      const zone = document.createElement('div');
-      zone.className = 'snap-zone';
-      zone.style.left = x + 'px';
-      zone.style.top = y + 'px';
-      zone.style.width = w + 'px';
-      zone.style.height = h + 'px';
-      GAME.canvas.appendChild(zone);
-      GAME.activeSnaps.push(zone);
-      requestAnimationFrame(() => zone.classList.add('visible'));
-      return zone;
-    }
-
     function clearSnaps() {
       GAME.activeSnaps.forEach(z => z.remove());
       GAME.activeSnaps = [];
     }
 
+    function addSnapZone(x, y, w, h) {
+      const z = document.createElement('div');
+      z.className = 'snap-zone';
+      z.style.left = `${x}px`;
+      z.style.top = `${y}px`;
+      z.style.width = `${w}px`;
+      z.style.height = `${h}px`;
+      GAME.canvas.appendChild(z);
+      GAME.activeSnaps.push(z);
+      requestAnimationFrame(() => z.classList.add('visible'));
+    }
+
+    function allowedDirections(side) {
+      if (side === 'right') return ['right', 'up', 'down'];
+      if (side === 'left') return ['left', 'up', 'down'];
+      if (side === 'top') return ['up', 'left', 'right'];
+      return ['down', 'left', 'right'];
+    }
+
+    function getPlacementRect(end, dir) {
+      if (dir === 'right') return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+      if (dir === 'left') return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+      if (dir === 'up') return { x: end.x - GAME.tileH / 2, y: end.y - GAME.tileW, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+      return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+    }
+
     function showSnapsForDrag(tile) {
       clearSnaps();
-      const openEnds = computeOpenEndpoints();
-      const seen = new Set();
-      for (const end of openEnds) {
+      for (const end of computeOpenEndpoints()) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
-        const key = `${end.tileId}:${end.side}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-
-        if (end.side === 'right') {
-          addSnapZone(end.x - 3, end.y - GAME.tileH / 2, 8, GAME.tileH);
-          addSnapZone(end.x - GAME.tileH / 2, end.y - GAME.tileW - 2, GAME.tileH, GAME.tileW);
-          addSnapZone(end.x - GAME.tileH / 2, end.y + 2, GAME.tileH, GAME.tileW);
-        }
-        if (end.side === 'left') {
-          addSnapZone(end.x - 5, end.y - GAME.tileH / 2, 8, GAME.tileH);
-          addSnapZone(end.x - GAME.tileH / 2, end.y - GAME.tileW - 2, GAME.tileH, GAME.tileW);
-          addSnapZone(end.x - GAME.tileH / 2, end.y + 2, GAME.tileH, GAME.tileW);
-        }
-        if (end.side === 'top') {
-          addSnapZone(end.x - GAME.tileH / 2, end.y - 5, GAME.tileH, 8);
-          addSnapZone(end.x - GAME.tileW - 2, end.y - GAME.tileH / 2, GAME.tileW, GAME.tileH);
-          addSnapZone(end.x + 2, end.y - GAME.tileH / 2, GAME.tileW, GAME.tileH);
-        }
-        if (end.side === 'bottom') {
-          addSnapZone(end.x - GAME.tileH / 2, end.y - 3, GAME.tileH, 8);
-          addSnapZone(end.x - GAME.tileW - 2, end.y - GAME.tileH / 2, GAME.tileW, GAME.tileH);
-          addSnapZone(end.x + 2, end.y - GAME.tileH / 2, GAME.tileW, GAME.tileH);
+        for (const dir of allowedDirections(end.side)) {
+          const rect = getPlacementRect(end, dir);
+          if (dir === 'right') addSnapZone(rect.x - GAME.snapThickness / 2, rect.y, GAME.snapThickness, rect.h);
+          if (dir === 'left') addSnapZone(rect.x + rect.w - GAME.snapThickness / 2, rect.y, GAME.snapThickness, rect.h);
+          if (dir === 'up') addSnapZone(rect.x, rect.y + rect.h - GAME.snapThickness / 2, rect.w, GAME.snapThickness);
+          if (dir === 'down') addSnapZone(rect.x, rect.y - GAME.snapThickness / 2, rect.w, GAME.snapThickness);
         }
       }
     }
@@ -647,68 +578,36 @@
     }
 
     function choosePlacement(tile, pointer) {
-      const openEnds = computeOpenEndpoints();
       let best = null;
-      for (const end of openEnds) {
+      for (const end of computeOpenEndpoints()) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
-        const dx = pointer.x - end.x;
-        const dy = pointer.y - end.y;
-        const absDx = Math.abs(dx);
-        const absDy = Math.abs(dy);
-        const near = Math.hypot(dx, dy) < 170;
-        if (!near) continue;
-
-        let candidateDirs = [];
-        if (end.side === 'right') candidateDirs = ['right', 'up', 'down'];
-        if (end.side === 'left') candidateDirs = ['left', 'up', 'down'];
-        if (end.side === 'top') candidateDirs = ['up', 'left', 'right'];
-        if (end.side === 'bottom') candidateDirs = ['down', 'left', 'right'];
-
-        let dir = candidateDirs[0];
-        if (end.side === 'right' || end.side === 'left') {
-          if (absDy > absDx) dir = dy < 0 ? 'up' : 'down';
-          else dir = end.side === 'right' ? 'right' : 'left';
-        } else {
-          if (absDx > absDy) dir = dx < 0 ? 'left' : 'right';
-          else dir = end.side === 'top' ? 'up' : 'down';
+        for (const dir of allowedDirections(end.side)) {
+          const rect = getPlacementRect(end, dir);
+          const cx = rect.x + rect.w / 2;
+          const cy = rect.y + rect.h / 2;
+          const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
+          if (dist > 120) continue;
+          if (!best || dist < best.dist) best = { end, dir, rect, dist };
         }
-
-        const score = Math.hypot(dx, dy);
-        if (!best || score < best.score) best = { end, dir, score };
       }
       return best;
     }
 
-    function placeTileAt(tile, anchor, dir) {
-      const matchingFaceShouldBe = (dir === 'right' || dir === 'down') ? 'a' : 'b';
-      const currentMatchIs = tile.a === anchor.value ? 'a' : (tile.b === anchor.value ? 'b' : null);
-      if (!currentMatchIs) return false;
-      if (currentMatchIs !== matchingFaceShouldBe) swapFaces(tile);
+    function matchingShouldBe(tile, anchorValue, dir) {
+      if (dir === 'right' || dir === 'down') return 'a';
+      return 'b';
+    }
 
-      const orientation = (dir === 'left' || dir === 'right') ? 'horizontal' : 'vertical';
-      applyOrientation(tile, orientation);
-      const size = getTileSize(orientation);
+    function placeTileAt(tile, end, dir) {
+      const targetFace = matchingShouldBe(tile, end.value, dir);
+      const currentFace = tile.a === end.value ? 'a' : (tile.b === end.value ? 'b' : null);
+      if (!currentFace) return false;
+      if (currentFace !== targetFace) swapFaces(tile);
 
-      let x = 0, y = 0;
-      if (dir === 'right') {
-        x = anchor.x;
-        y = anchor.y - size.h / 2;
-      }
-      if (dir === 'left') {
-        x = anchor.x - size.w;
-        y = anchor.y - size.h / 2;
-      }
-      if (dir === 'up') {
-        x = anchor.x - size.w / 2;
-        y = anchor.y - size.h;
-      }
-      if (dir === 'down') {
-        x = anchor.x - size.w / 2;
-        y = anchor.y;
-      }
-
-      tile.x = Math.round(x);
-      tile.y = Math.round(y);
+      const rect = getPlacementRect(end, dir);
+      applyOrientation(tile, rect.orientation);
+      tile.x = Math.round(rect.x);
+      tile.y = Math.round(rect.y);
       tile.placed = true;
       tile.element.style.left = tile.x + 'px';
       tile.element.style.top = tile.y + 'px';
@@ -722,10 +621,9 @@
     function enableDrag(tile) {
       tile.element.onpointerdown = (e) => {
         if (tile.placed) return;
-        if ((tile.player ?? GAME.currentPlayer) !== GAME.currentPlayer) return;
+        if (tile.player !== GAME.currentPlayer) return;
         e.preventDefault();
         tile.element.classList.add('dragging');
-        GAME.dragged = tile;
         GAME.canvas.appendChild(tile.element);
         const p = getCanvasPointer(e);
         const rect = tile.element.getBoundingClientRect();
@@ -734,13 +632,12 @@
         const tileCanvasY = (rect.top - vRect.top - GAME.panY) / GAME.scale;
         const shiftX = p.x - tileCanvasX;
         const shiftY = p.y - tileCanvasY;
-
         showSnapsForDrag(tile);
 
         const move = (ev) => {
           const pp = getCanvasPointer(ev);
-          tile.element.style.left = (pp.x - shiftX) + 'px';
-          tile.element.style.top = (pp.y - shiftY) + 'px';
+          tile.element.style.left = `${pp.x - shiftX}px`;
+          tile.element.style.top = `${pp.y - shiftY}px`;
         };
         const up = (ev) => {
           window.removeEventListener('pointermove', move);
@@ -755,23 +652,19 @@
             tile.placed = true;
             tile.orientation = 'horizontal';
             tile.element.classList.remove('mini', 'in-hand', 'dragging');
+            tile.element.classList.add('locked');
             tile.element.style.left = tile.x + 'px';
             tile.element.style.top = tile.y + 'px';
-            tile.element.classList.add('locked');
             GAME.canvas.appendChild(tile.element);
             GAME.placed.push(tile);
             GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
             renderHands();
-            GAME.dragged = null;
             return;
           }
           if (chosen && placeTileAt(tile, chosen.end, chosen.dir)) {
             GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
-            renderHands();
-          } else {
-            renderHands();
           }
-          GAME.dragged = null;
+          renderHands();
         };
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
@@ -860,7 +753,6 @@
         t1.element = createDominoElement(t1, true);
         enableDrag(t1);
         GAME.hands[1].push(t1);
-
         const t2 = GAME.bank.pop();
         t2.player = 2;
         t2.element = createDominoElement(t2, true);
@@ -880,14 +772,8 @@
       GAME.canvas.style.transform = `translate(${GAME.panX}px, ${GAME.panY}px) scale(${GAME.scale})`;
     }
 
-    document.getElementById('zoomIn').onclick = () => {
-      GAME.scale = Math.min(1.8, +(GAME.scale + 0.1).toFixed(2));
-      renderPanZoom();
-    };
-    document.getElementById('zoomOut').onclick = () => {
-      GAME.scale = Math.max(0.6, +(GAME.scale - 0.1).toFixed(2));
-      renderPanZoom();
-    };
+    document.getElementById('zoomIn').onclick = () => { GAME.scale = Math.min(1.8, +(GAME.scale + 0.1).toFixed(2)); renderPanZoom(); };
+    document.getElementById('zoomOut').onclick = () => { GAME.scale = Math.max(0.6, +(GAME.scale - 0.1).toFixed(2)); renderPanZoom(); };
     document.getElementById('drawBtn').onclick = drawTile;
     document.getElementById('passBtn').onclick = passTurn;
     document.getElementById('shuffleBtn').onclick = shuffleHands;
