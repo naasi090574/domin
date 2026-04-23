@@ -568,49 +568,140 @@
     }
 
     function getPlacementRect(end, dir) {
-      // Стыковка должна идти ребром конкретной картинки.
-      // Для поворотов используем координаты так, чтобы совпадали именно края половинок.
-      const halfW = GAME.tileW / 2;
+function getPlacementRect(end, dir) {
+  const W = GAME.tileW;   // ширина горизонтальной костяшки
+  const H = GAME.tileH;   // высота горизонтальной костяшки
 
-      if (end.side === 'right') {
-        if (dir === 'right') {
-          return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
-        }
-        if (dir === 'up') {
-          return { x: end.x - GAME.tileH / 2, y: end.y - halfW - GAME.tileH, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
-        }
-        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
-      }
+  // Важно:
+  // end.x / end.y = не центр всей костяшки,
+  // а внешний край СВОБОДНОЙ картинки
 
-      if (end.side === 'left') {
-        if (dir === 'left') {
-          return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
-        }
-        if (dir === 'up') {
-          return { x: end.x - GAME.tileH / 2, y: end.y - halfW - GAME.tileH, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
-        }
-        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
-      }
-
-      if (end.side === 'top') {
-        if (dir === 'up') {
-          return { x: end.x - GAME.tileH / 2, y: end.y - GAME.tileW, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
-        }
-        if (dir === 'left') {
-          return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
-        }
-        return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
-      }
-
-      if (dir === 'down') {
-        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
-      }
-      if (dir === 'left') {
-        return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
-      }
-      return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+  // ---------- если свободный конец справа ----------
+  if (end.side === 'right') {
+    if (dir === 'right') {
+      return {
+        x: end.x,
+        y: end.y - H / 2,
+        w: W,
+        h: H,
+        orientation: 'horizontal'
+      };
     }
 
+    if (dir === 'up') {
+      return {
+        x: end.x - H / 2,
+        y: end.y - W,
+        w: H,
+        h: W,
+        orientation: 'vertical'
+      };
+    }
+
+    // down
+    return {
+      x: end.x - H / 2,
+      y: end.y,
+      w: H,
+      h: W,
+      orientation: 'vertical'
+    };
+  }
+
+  // ---------- если свободный конец слева ----------
+  if (end.side === 'left') {
+    if (dir === 'left') {
+      return {
+        x: end.x - W,
+        y: end.y - H / 2,
+        w: W,
+        h: H,
+        orientation: 'horizontal'
+      };
+    }
+
+    if (dir === 'up') {
+      return {
+        x: end.x - H / 2,
+        y: end.y - W,
+        w: H,
+        h: W,
+        orientation: 'vertical'
+      };
+    }
+
+    // down
+    return {
+      x: end.x - H / 2,
+      y: end.y,
+      w: H,
+      h: W,
+      orientation: 'vertical'
+    };
+  }
+
+  // ---------- если свободный конец сверху ----------
+  if (end.side === 'top') {
+    if (dir === 'up') {
+      return {
+        x: end.x - H / 2,
+        y: end.y - W,
+        w: H,
+        h: W,
+        orientation: 'vertical'
+      };
+    }
+
+    if (dir === 'left') {
+      return {
+        x: end.x - W,
+        y: end.y - H / 2,
+        w: W,
+        h: H,
+        orientation: 'horizontal'
+      };
+    }
+
+    // right
+    return {
+      x: end.x,
+      y: end.y - H / 2,
+      w: W,
+      h: H,
+      orientation: 'horizontal'
+    };
+  }
+
+  // ---------- если свободный конец снизу ----------
+  if (dir === 'down') {
+    return {
+      x: end.x - H / 2,
+      y: end.y,
+      w: H,
+      h: W,
+      orientation: 'vertical'
+    };
+  }
+
+  if (dir === 'left') {
+    return {
+      x: end.x - W,
+      y: end.y - H / 2,
+      w: W,
+      h: H,
+      orientation: 'horizontal'
+    };
+  }
+
+  // right
+  return {
+    x: end.x,
+    y: end.y - H / 2,
+    w: W,
+    h: H,
+    orientation: 'horizontal'
+  };
+}
     function showSnapsForDrag(tile) {
       clearSnaps();
       for (const end of computeOpenEndpoints()) {
