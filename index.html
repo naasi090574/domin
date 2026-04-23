@@ -393,7 +393,6 @@
         </div>
       </div>
       <button class="btn primary" id="drawBtn">Взять из банка</button>
-      <button class="btn secondary" id="passBtn">Пропустить ход</button>
       <button class="btn secondary" id="shuffleBtn">Перемешать</button>
       <button class="btn secondary" id="restartBtn">Начать заново</button>
       <div class="zoom-row">
@@ -468,12 +467,13 @@
     });
 
     const FACE_LIBRARY = {
-      dino:  { label: 'Динозавр', value: '🦕', src: null },
-      duck:  { label: 'Утёнок', value: '🐥', src: null },
+      dino: { label: 'Динозавр', value: '🦕', src: null },
+      duck: { label: 'Утёнок', value: '🐥', src: null },
       bunny: { label: 'Заяц', value: '🐰', src: null },
-      dog:   { label: 'Собачка', value: '🐶', src: null },
-      bear:  { label: 'Мишка', value: '🧸', src: null },
-      fox:   { label: 'Лиса', value: '🦊', src: null }
+      dog: { label: 'Собачка', value: '🐶', src: null },
+      bear: { label: 'Мишка', value: '🧸', src: null },
+      fox: { label: 'Лиса', value: '🦊', src: null },
+      cat: { label: 'Котик', value: '🐱', src: null }
     };
 
     const GAME = {
@@ -498,15 +498,20 @@
       placed: [],
       endpoints: [],
       nextId: 1,
-      activeSnaps: []
+      activeSnaps: [],
+      gameOver: false
     };
 
-    const ALL_TILES = [
-      ['dino','duck'], ['duck','duck'], ['duck','dino'], ['dino','bunny'],
-      ['bunny','fox'], ['dog','bear'], ['bear','fox'], ['fox','dog'],
-      ['duck','bunny'], ['bunny','bear'], ['fox','fox'], ['dog','dog'],
-      ['dino','dog'], ['bear','duck']
-    ];
+    const ALL_TILES = (() => {
+      const keys = ['dino', 'duck', 'bunny', 'dog', 'bear', 'fox', 'cat'];
+      const result = [];
+      for (let i = 0; i < keys.length; i++) {
+        for (let j = i; j < keys.length; j++) {
+          result.push([keys[i], keys[j]]);
+        }
+      }
+      return result;
+    })();
 
     function shuffle(array) {
       const arr = [...array];
@@ -673,6 +678,110 @@
       }
 
       GAME.endpoints = all.filter(e => !used.has(`${e.tileId}:${e.side}`));
+    }
+
+    function otherPlayer(player) {
+      return player === 1 ? 2 : 1;
+    }
+
+    function playerHasMove(player) {
+      if (!GAME.hands[player].length) return false;
+      if (!GAME.placed.length) return GAME.hands[player].length > 0;
+
+      for (const tile of GAME.hands[player]) {
+        for (const end of GAME.endpoints) {
+          if (tile.a !== end.value && tile.b !== end.value) continue;
+          for (const dir of allowedDirections(end.side)) {
+            const candidate = placementFor(end, dir, tile);
+            if (candidate) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function countPlayerTiles(player) {
+      return GAME.hands[player].length;
+    }
+
+    function finishGame(message) {
+      GAME.gameOver = true;
+      GAME.turnLabel.textContent = message;
+      setTimeout(() => alert(message), 50);
+    }
+
+    function checkBlockedGame() {
+      if (GAME.bank.length > 0) return false;
+
+      const p1Can = playerHasMove(1);
+      const p2Can = playerHasMove(2);
+
+      if (p1Can || p2Can) return false;
+
+      const p1Count = countPlayerTiles(1);
+      const p2Count = countPlayerTiles(2);
+
+      if (p1Count < p2Count) {
+        finishGame(`Игра окончена. Банк пуст, ходов нет. Победил Игрок 1 — у него меньше костяшек (${p1Count} против ${p2Count}).`);
+      } else if (p2Count < p1Count) {
+        finishGame(`Игра окончена. Банк пуст, ходов нет. Победил Игрок 2 — у него меньше костяшек (${p2Count} против ${p1Count}).`);
+      } else {
+        finishGame(`Игра окончена. Банк пуст, ходов нет. Ничья — у игроков одинаковое количество костяшек (${p1Count}).`);
+      }
+
+      return true;
+    }
+
+    function advanceTurnAfterMove(previousPlayer) {
+      if (GAME.gameOver) return;
+
+      if (GAME.hands[previousPlayer].length === 0) {
+        finishGame(`Игра окончена. Победил Игрок ${previousPlayer} — у него закончились костяшки.`);
+        return;
+      }
+
+      const next = otherPlayer(previousPlayer);
+      GAME.currentPlayer = next;
+      renderHands();
+
+      if (playerHasMove(next)) return;
+
+      if (GAME.bank.length > 0) {
+        GAME.turnLabel.textContent = `Ход: Игрок ${next} — возьмите из банка`;
+        return;
+      }
+
+      const back = previousPlayer;
+      if (playerHasMove(back)) {
+        GAME.currentPlayer = back;
+        renderHands();
+        return;
+      }
+
+      checkBlockedGame();
+    }
+
+    function afterDrawCheck() {
+      if (GAME.gameOver) return;
+
+      if (playerHasMove(GAME.currentPlayer)) {
+        renderHands();
+        return;
+      }
+
+      if (GAME.bank.length > 0) {
+        GAME.turnLabel.textContent = `Ход: Игрок ${GAME.currentPlayer} — возьмите из банка`;
+        return;
+      }
+
+      const other = otherPlayer(GAME.currentPlayer);
+      if (playerHasMove(other)) {
+        GAME.currentPlayer = other;
+        renderHands();
+        return;
+      }
+
+      checkBlockedGame();
     }
 
     function renderHands() {
@@ -848,6 +957,7 @@
       tile.element.onpointerdown = (e) => {
         if (tile.placed) return;
         if (tile.player !== GAME.currentPlayer) return;
+        if (GAME.gameOver) return;
 
         e.preventDefault();
         tile.element.classList.add('dragging');
@@ -896,8 +1006,12 @@
           }
 
           if (chosen) {
+            const current = GAME.currentPlayer;
             placeTileAt(tile, chosen);
-            GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
+            GAME.hands[current] = GAME.hands[current].filter(t => t.id !== tile.id);
+            renderHands();
+            advanceTurnAfterMove(current);
+            return;
           }
 
           renderHands();
@@ -969,18 +1083,19 @@
     }
 
     function drawTile() {
-      if (!GAME.bank.length) return;
+      if (GAME.gameOver) return;
+      if (!GAME.bank.length) {
+        afterDrawCheck();
+        return;
+      }
+
       const tile = GAME.bank.pop();
       tile.player = GAME.currentPlayer;
       tile.element = createDominoElement(tile, true);
       enableDrag(tile);
       GAME.hands[GAME.currentPlayer].push(tile);
       renderHands();
-    }
-
-    function passTurn() {
-      GAME.currentPlayer = GAME.currentPlayer === 1 ? 2 : 1;
-      renderHands();
+      afterDrawCheck();
     }
 
     function restartGame() {
@@ -989,10 +1104,12 @@
       GAME.placed = [];
       GAME.endpoints = [];
       GAME.currentPlayer = 1;
+      GAME.gameOver = false;
+
       clearSnaps();
       GAME.canvas.querySelectorAll('.domino').forEach(el => el.remove());
 
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 7; i++) {
         const t1 = GAME.bank.pop();
         t1.player = 1;
         t1.element = createDominoElement(t1, true);
@@ -1030,7 +1147,6 @@
     };
 
     document.getElementById('drawBtn').onclick = drawTile;
-    document.getElementById('passBtn').onclick = passTurn;
     document.getElementById('shuffleBtn').onclick = shuffleHands;
     document.getElementById('restartBtn').onclick = restartGame;
 
