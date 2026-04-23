@@ -2,135 +2,153 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Domino Editor v2</title>
+<title>Domino</title>
+
 <style>
-body{margin:0;font-family:Arial;background:#e7b1ae}
-#board{position:relative;width:100vw;height:100vh;background:#f3f3f3;overflow:hidden}
-.tile{position:absolute;width:140px;height:70px;background:#d8c8c8;border-radius:10px;border:2px solid #fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px;cursor:grab}
-.tile.vertical{width:70px;height:140px;flex-direction:column}
-.face{font-size:28px}
-.divider{width:2px;height:60%;background:#666}
-.vertical .divider{width:60%;height:2px}
-.snap{position:absolute;border:2px dashed #6c33ff;border-radius:8px;opacity:.3}
+body {
+  margin: 0;
+  background: #e6e6e6;
+  font-family: sans-serif;
+}
+
+#board {
+  width: 100%;
+  height: 80vh;
+  position: relative;
+  background: #f5f5f5;
+}
+
+.domino {
+  position: absolute;
+  width: 120px;
+  height: 60px;
+  background: #d8cccc;
+  border-radius: 14px;
+  display: flex;
+  overflow: hidden;
+  border: 2px solid #999;
+  cursor: grab;
+}
+
+.half {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.divider {
+  width: 2px;
+  background: #555;
+}
 </style>
 </head>
+
 <body>
+
 <div id="board"></div>
+
 <script>
-const board=document.getElementById('board')
+const board = document.getElementById("board");
 
-// тестовые костяшки
-const tiles=[
- {a:'🍌',b:'🔔'},
- {a:'🔔',b:'🔔'},
- {a:'🔔',b:'📚'},
- {a:'📚',b:'🚗'},
- {a:'🚗',b:'🐱'}
-]
+let tiles = [
+  ["🍌","🔔"],
+  ["🔔","🔔"],
+  ["📚","🚗"],
+  ["🚗","🐱"]
+];
 
-let chain=[]
+let ends = [];
 
-function createTile(data,x,y){
- const el=document.createElement('div')
- el.className='tile'
- el.innerHTML=`<div class="face">${data.a}</div><div class="divider"></div><div class="face">${data.b}</div>`
- el.style.left=x+'px'
- el.style.top=y+'px'
- el.dataset.a=data.a
- el.dataset.b=data.b
- enableDrag(el)
- board.appendChild(el)
- return el
+function createTile(data, x=100, y=300) {
+
+  const tile = document.createElement("div");
+  tile.className = "domino";
+
+  const left = document.createElement("div");
+  left.className = "half";
+  left.textContent = data[0];
+
+  const divider = document.createElement("div");
+  divider.className = "divider";
+
+  const right = document.createElement("div");
+  right.className = "half";
+  right.textContent = data[1];
+
+  tile.append(left, divider, right);
+  board.appendChild(tile);
+
+  tile.style.left = x + "px";
+  tile.style.top = y + "px";
+
+  makeDrag(tile, data);
+
+  return tile;
 }
+function makeDrag(tile, data) {
 
-function enableDrag(el){
- let offsetX,offsetY
- el.onpointerdown=e=>{
-  offsetX=e.offsetX
-  offsetY=e.offsetY
-  el.setPointerCapture(e.pointerId)
- }
- el.onpointermove=e=>{
-  if(!el.hasPointerCapture(e.pointerId))return
-  el.style.left=(e.clientX-offsetX)+'px'
-  el.style.top=(e.clientY-offsetY)+'px'
- }
- el.onpointerup=e=>{
-  el.releasePointerCapture(e.pointerId)
-  trySnap(el)
- }
+  tile.onmousedown = (e) => {
+
+    let shiftX = e.clientX - tile.getBoundingClientRect().left;
+    let shiftY = e.clientY - tile.getBoundingClientRect().top;
+
+    document.onmousemove = (e) => {
+      tile.style.left = e.pageX - shiftX + "px";
+      tile.style.top = e.pageY - shiftY + "px";
+    };
+
+    document.onmouseup = () => {
+      document.onmousemove = null;
+      document.onmouseup = null;
+
+      tryAttach(tile, data);
+    };
+  };
 }
+function tryAttach(tile, data) {
 
-function trySnap(el){
- if(chain.length===0){
-  chain.push(el)
-  return
- }
+  if (ends.length === 0) {
+    ends.push({
+      value: data[0],
+      x: parseInt(tile.style.left),
+      y: parseInt(tile.style.top)
+    });
 
- let attached=false
+    ends.push({
+      value: data[1],
+      x: parseInt(tile.style.left) + 120,
+      y: parseInt(tile.style.top)
+    });
 
- chain.forEach(target=>{
-  const tRect=target.getBoundingClientRect()
-  const eRect=el.getBoundingClientRect()
+    return;
+  }
 
-  const sides=[
-   {dir:'right',x:tRect.right,y:tRect.top,match:target.dataset.b,place:'a'},
-   {dir:'left',x:tRect.left,y:tRect.top,match:target.dataset.a,place:'b'},
-   {dir:'top',x:tRect.left,y:tRect.top,match:target.dataset.a,place:'b'},
-   {dir:'bottom',x:tRect.left,y:tRect.bottom,match:target.dataset.b,place:'a'}
-  ]
+  for (let end of ends) {
 
-  sides.forEach(side=>{
-   const dist=Math.hypot(eRect.left-side.x,eRect.top-side.y)
-   if(dist<80 && !attached){
+    if (end.value === data[0] || end.value === data[1]) {
 
-    const a=el.dataset.a
-    const b=el.dataset.b
-
-    if(a===side.match || b===side.match){
-
-      // переворот
-      if(a!==side.match){
-        el.dataset.a=b
-        el.dataset.b=a
-        el.innerHTML=`<div class="face">${b}</div><div class="divider"></div><div class="face">${a}</div>`
+      if (end.value === data[1]) {
+        data = [data[1], data[0]];
+        tile.children[0].textContent = data[0];
+        tile.children[2].textContent = data[1];
       }
 
-      // позиция
-      if(side.dir==='right'){
-        el.style.left=(target.offsetLeft+140)+'px'
-        el.style.top=target.offsetTop+'px'
-      }
-      if(side.dir==='left'){
-        el.style.left=(target.offsetLeft-140)+'px'
-        el.style.top=target.offsetTop+'px'
-      }
-      if(side.dir==='top'){
-        el.classList.add('vertical')
-        el.style.left=target.offsetLeft+'px'
-        el.style.top=(target.offsetTop-140)+'px'
-      }
-      if(side.dir==='bottom'){
-        el.classList.add('vertical')
-        el.style.left=target.offsetLeft+'px'
-        el.style.top=(target.offsetTop+70)+'px'
-      }
+      tile.style.left = end.x + "px";
+      tile.style.top = end.y + "px";
 
-      chain.push(el)
-      attached=true
+      end.value = data[1];
+
+      return;
     }
-   }
-  })
- })
+  }
 }
 
-// старт
-createTile({a:'🍌',b:'🔔'},400,300)
-
-// рука игрока
 tiles.forEach((t,i)=>{
- createTile(t,100+i*150,500)
-})
+  createTile(t, 50 + i*130, 400);
+});
 </script>
+
 </body>
 </html>
