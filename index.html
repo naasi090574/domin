@@ -393,6 +393,10 @@
         </div>
       </div>
       <button class="btn primary" id="drawBtn">Взять из банка</button>
+
+      <!-- ИЗМЕНЕНО: кнопку Пропустить ход убрали -->
+      <!-- <button class="btn secondary" id="passBtn">Пропустить ход</button> -->
+
       <button class="btn secondary" id="shuffleBtn">Перемешать</button>
       <button class="btn secondary" id="restartBtn">Начать заново</button>
       <div class="zoom-row">
@@ -466,16 +470,18 @@
       root.style.setProperty('--ui-font', e.target.value);
     });
 
+    // ИЗМЕНЕНО: добавили 7-ю картинку cat
     const FACE_LIBRARY = {
-      dino: { label: 'Динозавр', value: '🦕', src: null },
-      duck: { label: 'Утёнок', value: '🐥', src: null },
+      dino:  { label: 'Динозавр', value: '🦕', src: null },
+      duck:  { label: 'Утёнок', value: '🐥', src: null },
       bunny: { label: 'Заяц', value: '🐰', src: null },
-      dog: { label: 'Собачка', value: '🐶', src: null },
-      bear: { label: 'Мишка', value: '🧸', src: null },
-      fox: { label: 'Лиса', value: '🦊', src: null },
-      cat: { label: 'Котик', value: '🐱', src: null }
+      dog:   { label: 'Собачка', value: '🐶', src: null },
+      bear:  { label: 'Мишка', value: '🧸', src: null },
+      fox:   { label: 'Лиса', value: '🦊', src: null },
+      cat:   { label: 'Котик', value: '🐱', src: null }
     };
 
+    // ИЗМЕНЕНО: добавили gameOver
     const GAME = {
       CELL: 66,
       viewport: document.getElementById('viewport'),
@@ -502,6 +508,7 @@
       gameOver: false
     };
 
+    // ИЗМЕНЕНО: теперь 28 костяшек из 7 картинок
     const ALL_TILES = (() => {
       const keys = ['dino', 'duck', 'bunny', 'dog', 'bear', 'fox', 'cat'];
       const result = [];
@@ -680,6 +687,7 @@
       GAME.endpoints = all.filter(e => !used.has(`${e.tileId}:${e.side}`));
     }
 
+    // ИЗМЕНЕНО: служебные функции для автоперехода хода и конца игры
     function otherPlayer(player) {
       return player === 1 ? 2 : 1;
     }
@@ -957,7 +965,7 @@
       tile.element.onpointerdown = (e) => {
         if (tile.placed) return;
         if (tile.player !== GAME.currentPlayer) return;
-        if (GAME.gameOver) return;
+        if (GAME.gameOver) return; // ИЗМЕНЕНО
 
         e.preventDefault();
         tile.element.classList.add('dragging');
@@ -990,6 +998,9 @@
           const chosen = choosePlacement(tile, pp);
 
           if (!GAME.placed.length) {
+            // ИЗМЕНЕНО: после первого хода тоже автоматический переход
+            const current = GAME.currentPlayer;
+
             tile.orientation = 'H';
             tile.gx = Math.round(pp.x / GAME.CELL);
             tile.gy = Math.round(pp.y / GAME.CELL);
@@ -999,13 +1010,15 @@
             placeElementFromGrid(tile);
             GAME.canvas.appendChild(tile.element);
             GAME.placed.push(tile);
-            GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
+            GAME.hands[current] = GAME.hands[current].filter(t => t.id !== tile.id);
             resetEndpointsFromPlaced();
             renderHands();
+            advanceTurnAfterMove(current);
             return;
           }
 
           if (chosen) {
+            // ИЗМЕНЕНО: автоматический переход после успешного хода
             const current = GAME.currentPlayer;
             placeTileAt(tile, chosen);
             GAME.hands[current] = GAME.hands[current].filter(t => t.id !== tile.id);
@@ -1082,6 +1095,7 @@
       return GAME.placed.find(t => t.id === id) || null;
     }
 
+    // ИЗМЕНЕНО: добор из банка с проверкой блокировки
     function drawTile() {
       if (GAME.gameOver) return;
       if (!GAME.bank.length) {
@@ -1098,6 +1112,9 @@
       afterDrawCheck();
     }
 
+    // ИЗМЕНЕНО: функции passTurn больше нет
+
+    // ИЗМЕНЕНО: старт по 7 костяшек, в банке 14
     function restartGame() {
       GAME.bank = shuffle(ALL_TILES).map(([a, b]) => createTile(a, b));
       GAME.hands = { 1: [], 2: [] };
@@ -1149,6 +1166,8 @@
     document.getElementById('drawBtn').onclick = drawTile;
     document.getElementById('shuffleBtn').onclick = shuffleHands;
     document.getElementById('restartBtn').onclick = restartGame;
+
+    // ИЗМЕНЕНО: обработчик passBtn удалён
 
     GAME.viewport.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.domino')) return;
