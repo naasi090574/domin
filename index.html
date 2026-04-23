@@ -20,8 +20,7 @@
       --left-w: 250px;
       --right-w: 320px;
       --strip-h: 110px;
-      --tile-w: 132px;
-      --tile-h: 66px;
+      --cell: 66px;
     }
 
     * { box-sizing: border-box; }
@@ -41,9 +40,7 @@
       width: 100vw;
     }
 
-    .left, .right, .strip {
-      background: var(--panel-bg);
-    }
+    .left, .right, .strip { background: var(--panel-bg); }
 
     .left {
       padding: 18px;
@@ -80,10 +77,7 @@
       line-height: 1;
     }
 
-    .bank-label {
-      opacity: .8;
-      margin-top: 8px;
-    }
+    .bank-label { opacity: .8; margin-top: 8px; }
 
     .btn {
       border: 0;
@@ -150,6 +144,7 @@
       font-weight: 800;
       opacity: .78;
       margin-right: 8px;
+      flex: 0 0 auto;
     }
 
     .board-shell {
@@ -165,23 +160,21 @@
       cursor: grab;
     }
 
-    .board-viewport.panning {
-      cursor: grabbing;
-    }
+    .board-viewport.panning { cursor: grabbing; }
 
     .board-canvas {
       position: absolute;
       left: 0;
       top: 0;
-      width: 3000px;
-      height: 2200px;
+      width: 4200px;
+      height: 3200px;
       transform-origin: top left;
     }
 
     .domino {
       position: absolute;
-      width: var(--tile-w);
-      height: var(--tile-h);
+      width: calc(var(--cell) * 2);
+      height: var(--cell);
       background: var(--tile-bg);
       border: 3px solid var(--tile-border);
       border-radius: 16px;
@@ -195,24 +188,15 @@
     }
 
     .domino.vertical {
-      width: var(--tile-h);
-      height: var(--tile-w);
+      width: var(--cell);
+      height: calc(var(--cell) * 2);
       grid-template-columns: 1fr;
       grid-template-rows: 1fr 2px 1fr;
     }
 
-    .domino.in-hand {
-      cursor: grab;
-    }
-
-    .domino.dragging {
-      opacity: .92;
-      z-index: 9999;
-    }
-
-    .domino.locked {
-      cursor: default;
-    }
+    .domino.in-hand { cursor: grab; }
+    .domino.dragging { opacity: .95; z-index: 9999; }
+    .domino.locked { cursor: default; }
 
     .face {
       width: 100%;
@@ -264,19 +248,9 @@
       background: color-mix(in srgb, var(--tile-bg) 96%, white 4%);
     }
 
-    .mini.vertical {
-      width: 54px;
-      height: 108px;
-    }
-
-    .mini .face-content {
-      font-size: 24px;
-    }
-
-    .mini .face-content img {
-      max-width: 72%;
-      max-height: 72%;
-    }
+    .mini.vertical { width: 54px; height: 108px; }
+    .mini .face-content { font-size: 24px; }
+    .mini .face-content img { max-width: 72%; max-height: 72%; }
 
     .snap-zone {
       position: absolute;
@@ -312,9 +286,7 @@
       top: calc(50% - 1px);
     }
 
-    .snap-zone.visible {
-      opacity: 1;
-    }
+    .snap-zone.visible { opacity: 1; }
 
     .right {
       padding: 16px;
@@ -349,9 +321,7 @@
       font-size: 14px;
     }
 
-    .row:last-child {
-      margin-bottom: 0;
-    }
+    .row:last-child { margin-bottom: 0; }
 
     input[type="color"] {
       width: 44px;
@@ -498,15 +468,16 @@
     });
 
     const FACE_LIBRARY = {
-      dino: { label: 'Динозавр', value: '🦕', src: null },
-      duck: { label: 'Утёнок', value: '🐥', src: null },
+      dino:  { label: 'Динозавр', value: '🦕', src: null },
+      duck:  { label: 'Утёнок', value: '🐥', src: null },
       bunny: { label: 'Заяц', value: '🐰', src: null },
-      dog: { label: 'Собачка', value: '🐶', src: null },
-      bear: { label: 'Мишка', value: '🧸', src: null },
-      fox: { label: 'Лиса', value: '🦊', src: null }
+      dog:   { label: 'Собачка', value: '🐶', src: null },
+      bear:  { label: 'Мишка', value: '🧸', src: null },
+      fox:   { label: 'Лиса', value: '🦊', src: null }
     };
 
     const GAME = {
+      CELL: 66,
       viewport: document.getElementById('viewport'),
       canvas: document.getElementById('canvas'),
       player1Strip: document.getElementById('player1Strip'),
@@ -514,27 +485,27 @@
       turnLabel: document.getElementById('turnLabel'),
       bankCount: document.getElementById('bankCount'),
       scale: 1,
-      panX: -170,
-      panY: -260,
+      panX: -250,
+      panY: -220,
       panning: false,
       pointerStartX: 0,
       pointerStartY: 0,
       startPanX: 0,
       startPanY: 0,
-      tileW: 132,
-      tileH: 66,
       currentPlayer: 1,
       bank: [],
       hands: { 1: [], 2: [] },
       placed: [],
+      endpoints: [],
       nextId: 1,
       activeSnaps: []
     };
 
     const ALL_TILES = [
-      ['dino','duck'], ['duck','duck'], ['duck','dino'], ['dino','bunny'], ['bunny','fox'],
-      ['dog','bear'], ['bear','fox'], ['fox','dog'], ['duck','bunny'], ['bunny','bear'],
-      ['fox','fox'], ['dog','dog'], ['dino','dog'], ['bear','duck']
+      ['dino','duck'], ['duck','duck'], ['duck','dino'], ['dino','bunny'],
+      ['bunny','fox'], ['dog','bear'], ['bear','fox'], ['fox','dog'],
+      ['duck','bunny'], ['bunny','bear'], ['fox','fox'], ['dog','dog'],
+      ['dino','dog'], ['bear','duck']
     ];
 
     function shuffle(array) {
@@ -565,7 +536,7 @@
     function createDominoElement(tile, mini = false) {
       const el = document.createElement('div');
       el.className = mini ? 'domino mini in-hand' : 'domino in-hand';
-      if (tile.orientation === 'vertical') el.classList.add('vertical');
+      if (tile.orientation === 'V') el.classList.add('vertical');
       el.dataset.id = tile.id;
 
       const aFace = document.createElement('div');
@@ -588,9 +559,9 @@
         id: 't' + (GAME.nextId++),
         a,
         b,
-        orientation: 'horizontal',
-        x: 0,
-        y: 0,
+        orientation: 'H',
+        gx: 0,
+        gy: 0,
         placed: false,
         element: null,
         player: 1
@@ -605,75 +576,103 @@
 
     function applyOrientation(tile, orientation) {
       tile.orientation = orientation;
-      tile.element.classList.toggle('vertical', orientation === 'vertical');
+      tile.element.classList.toggle('vertical', orientation === 'V');
     }
 
-    function getTileSize(orientation) {
-      return orientation === 'vertical'
-        ? { w: GAME.tileH, h: GAME.tileW }
-        : { w: GAME.tileW, h: GAME.tileH };
-    }
-
-    function getEndpoints(tile) {
-      const { x, y, a, b, orientation } = tile;
-      const s = getTileSize(orientation);
-
-      if (orientation === 'horizontal') {
+    function getPixelRectFromGrid(tile) {
+      if (tile.orientation === 'H') {
         return {
-          left: {
-            tileId: tile.id,
-            side: 'left',
-            value: a,
-            x: x,
-            y: y + s.h / 2
-          },
-          right: {
-            tileId: tile.id,
-            side: 'right',
-            value: b,
-            x: x + s.w,
-            y: y + s.h / 2
-          }
+          x: tile.gx * GAME.CELL,
+          y: tile.gy * GAME.CELL,
+          w: GAME.CELL * 2,
+          h: GAME.CELL
         };
       }
-
       return {
-        top: {
-          tileId: tile.id,
-          side: 'top',
-          value: a,
-          x: x + s.w / 2,
-          y: y
-        },
-        bottom: {
-          tileId: tile.id,
-          side: 'bottom',
-          value: b,
-          x: x + s.w / 2,
-          y: y + s.h
-        }
+        x: tile.gx * GAME.CELL,
+        y: tile.gy * GAME.CELL,
+        w: GAME.CELL,
+        h: GAME.CELL * 2
       };
     }
 
-    function computeOpenEndpoints() {
+    function placeElementFromGrid(tile) {
+      const r = getPixelRectFromGrid(tile);
+      tile.element.style.left = r.x + 'px';
+      tile.element.style.top = r.y + 'px';
+    }
+
+    function getOccupiedCells(tile) {
+      if (tile.orientation === 'H') {
+        return [
+          { x: tile.gx, y: tile.gy, face: 'a' },
+          { x: tile.gx + 1, y: tile.gy, face: 'b' }
+        ];
+      }
+      return [
+        { x: tile.gx, y: tile.gy, face: 'a' },
+        { x: tile.gx, y: tile.gy + 1, face: 'b' }
+      ];
+    }
+
+    function cellKey(x, y) {
+      return `${x}:${y}`;
+    }
+
+    function buildOccupiedSet(ignoreTileId = null) {
+      const set = new Set();
+      for (const tile of GAME.placed) {
+        if (tile.id === ignoreTileId) continue;
+        for (const c of getOccupiedCells(tile)) {
+          set.add(cellKey(c.x, c.y));
+        }
+      }
+      return set;
+    }
+
+    function makeEndpoint(tileId, side, value, cellX, cellY) {
+      return { tileId, side, value, cellX, cellY };
+    }
+
+    function getTileEndpoints(tile) {
+      const cells = getOccupiedCells(tile);
+      if (tile.orientation === 'H') {
+        return [
+          makeEndpoint(tile.id, 'left', tile.a, cells[0].x, cells[0].y),
+          makeEndpoint(tile.id, 'right', tile.b, cells[1].x, cells[1].y)
+        ];
+      }
+      return [
+        makeEndpoint(tile.id, 'top', tile.a, cells[0].x, cells[0].y),
+        makeEndpoint(tile.id, 'bottom', tile.b, cells[1].x, cells[1].y)
+      ];
+    }
+
+    function resetEndpointsFromPlaced() {
       const all = [];
       for (const tile of GAME.placed) {
-        const ends = getEndpoints(tile);
-        all.push(...Object.values(ends));
+        all.push(...getTileEndpoints(tile));
       }
 
       const used = new Set();
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           if (all[i].value !== all[j].value) continue;
-          if (Math.abs(all[i].x - all[j].x) <= 4 && Math.abs(all[i].y - all[j].y) <= 4) {
+
+          const touches =
+            (all[i].side === 'right'  && all[j].side === 'left'   && all[i].cellX + 1 === all[j].cellX && all[i].cellY === all[j].cellY) ||
+            (all[i].side === 'left'   && all[j].side === 'right'  && all[i].cellX - 1 === all[j].cellX && all[i].cellY === all[j].cellY) ||
+            (all[i].side === 'bottom' && all[j].side === 'top'    && all[i].cellY + 1 === all[j].cellY && all[i].cellX === all[j].cellX) ||
+            (all[i].side === 'top'    && all[j].side === 'bottom' && all[i].cellY - 1 === all[j].cellY && all[i].cellX === all[j].cellX);
+
+          if (touches) {
             used.add(`${all[i].tileId}:${all[i].side}`);
             used.add(`${all[j].tileId}:${all[j].side}`);
           }
         }
       }
 
-      return all.filter(e => !used.has(`${e.tileId}:${e.side}`));
+      GAME.endpoints = all.filter(e => !used.has(`${e.tileId}:${e.side}`));
     }
 
     function renderHands() {
@@ -685,6 +684,7 @@
           if (!tile.element) tile.element = createDominoElement(tile, true);
           tile.element.className = 'domino mini in-hand';
           tile.element.classList.remove('vertical', 'locked');
+          tile.orientation = 'H';
           renderFace(tile.element.querySelector('.face-a'), tile.a);
           renderFace(tile.element.querySelector('.face-b'), tile.b);
           enableDrag(tile);
@@ -701,16 +701,15 @@
       GAME.activeSnaps = [];
     }
 
-    function addSnapZone(x, y, w, h, orientation) {
+    function addSnapZone(px, py, orientation) {
       const z = document.createElement('div');
-      z.className = `snap-zone ${orientation}`;
-      z.style.left = `${x}px`;
-      z.style.top = `${y}px`;
-      z.style.width = `${w}px`;
-      z.style.height = `${h}px`;
+      z.className = `snap-zone ${orientation === 'H' ? 'horizontal' : 'vertical'} visible`;
+      z.style.left = px + 'px';
+      z.style.top = py + 'px';
+      z.style.width = (orientation === 'H' ? GAME.CELL * 2 : GAME.CELL) + 'px';
+      z.style.height = (orientation === 'H' ? GAME.CELL : GAME.CELL * 2) + 'px';
       GAME.canvas.appendChild(z);
       GAME.activeSnaps.push(z);
-      requestAnimationFrame(() => z.classList.add('visible'));
     }
 
     function allowedDirections(side) {
@@ -720,56 +719,75 @@
       return ['down', 'left', 'right'];
     }
 
-    function getPlacementRect(end, dir) {
-      const W = GAME.tileW;
-      const H = GAME.tileH;
+    function placementFor(endpoint, dir, tile) {
+      const occupied = buildOccupiedSet();
 
-      if (end.side === 'right') {
-        if (dir === 'right') {
-          return { x: end.x, y: end.y - H / 2, w: W, h: H, orientation: 'horizontal' };
-        }
-        if (dir === 'up') {
-          return { x: end.x - H / 2, y: end.y - W, w: H, h: W, orientation: 'vertical' };
-        }
-        return { x: end.x - H / 2, y: end.y, w: H, h: W, orientation: 'vertical' };
+      let orientation = 'H';
+      let gx = 0;
+      let gy = 0;
+      let matchFace = null;
+
+      if (dir === 'right') {
+        orientation = 'H';
+        gx = endpoint.cellX + 1;
+        gy = endpoint.cellY;
+        matchFace = 'a';
       }
 
-      if (end.side === 'left') {
-        if (dir === 'left') {
-          return { x: end.x - W, y: end.y - H / 2, w: W, h: H, orientation: 'horizontal' };
-        }
-        if (dir === 'up') {
-          return { x: end.x - H / 2, y: end.y - W, w: H, h: W, orientation: 'vertical' };
-        }
-        return { x: end.x - H / 2, y: end.y, w: H, h: W, orientation: 'vertical' };
-      }
-
-      if (end.side === 'top') {
-        if (dir === 'up') {
-          return { x: end.x - H / 2, y: end.y - W, w: H, h: W, orientation: 'vertical' };
-        }
-        if (dir === 'left') {
-          return { x: end.x - W, y: end.y - H / 2, w: W, h: H, orientation: 'horizontal' };
-        }
-        return { x: end.x, y: end.y - H / 2, w: W, h: H, orientation: 'horizontal' };
+      if (dir === 'left') {
+        orientation = 'H';
+        gx = endpoint.cellX - 2;
+        gy = endpoint.cellY;
+        matchFace = 'b';
       }
 
       if (dir === 'down') {
-        return { x: end.x - H / 2, y: end.y, w: H, h: W, orientation: 'vertical' };
+        orientation = 'V';
+        gx = endpoint.cellX;
+        gy = endpoint.cellY + 1;
+        matchFace = 'a';
       }
-      if (dir === 'left') {
-        return { x: end.x - W, y: end.y - H / 2, w: W, h: H, orientation: 'horizontal' };
+
+      if (dir === 'up') {
+        orientation = 'V';
+        gx = endpoint.cellX;
+        gy = endpoint.cellY - 2;
+        matchFace = 'b';
       }
-      return { x: end.x, y: end.y - H / 2, w: W, h: H, orientation: 'horizontal' };
+
+      const matchesA = tile.a === endpoint.value;
+      const matchesB = tile.b === endpoint.value;
+      if (!matchesA && !matchesB) return null;
+
+      const swapNeeded =
+        (matchFace === 'a' && !matchesA) ||
+        (matchFace === 'b' && !matchesB);
+
+      const cells =
+        orientation === 'H'
+          ? [{ x: gx, y: gy }, { x: gx + 1, y: gy }]
+          : [{ x: gx, y: gy }, { x: gx, y: gy + 1 }];
+
+      if (occupied.has(cellKey(cells[0].x, cells[0].y)) || occupied.has(cellKey(cells[1].x, cells[1].y))) {
+        return null;
+      }
+
+      return { orientation, gx, gy, swapNeeded, dir, endpoint };
     }
 
     function showSnapsForDrag(tile) {
       clearSnaps();
-      for (const end of computeOpenEndpoints()) {
+
+      for (const end of GAME.endpoints) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
+
         for (const dir of allowedDirections(end.side)) {
-          const rect = getPlacementRect(end, dir);
-          addSnapZone(rect.x, rect.y, rect.w, rect.h, rect.orientation);
+          const candidate = placementFor(end, dir, tile);
+          if (!candidate) continue;
+
+          const px = candidate.gx * GAME.CELL;
+          const py = candidate.gy * GAME.CELL;
+          addSnapZone(px, py, candidate.orientation);
         }
       }
     }
@@ -785,48 +803,44 @@
     function choosePlacement(tile, pointer) {
       let best = null;
 
-      for (const end of computeOpenEndpoints()) {
+      for (const end of GAME.endpoints) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
 
         for (const dir of allowedDirections(end.side)) {
-          const rect = getPlacementRect(end, dir);
-          const cx = rect.x + rect.w / 2;
-          const cy = rect.y + rect.h / 2;
-          const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
+          const candidate = placementFor(end, dir, tile);
+          if (!candidate) continue;
 
-          if (dist > 120) continue;
-          if (!best || dist < best.dist) best = { end, dir, rect, dist };
+          const cx = candidate.gx * GAME.CELL + (candidate.orientation === 'H' ? GAME.CELL : GAME.CELL / 2);
+          const cy = candidate.gy * GAME.CELL + (candidate.orientation === 'H' ? GAME.CELL / 2 : GAME.CELL);
+
+          const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
+          if (dist > 140) continue;
+
+          if (!best || dist < best.dist) {
+            best = { ...candidate, dist };
+          }
         }
       }
 
       return best;
     }
 
-    function matchingShouldBe(dir) {
-      if (dir === 'right' || dir === 'down') return 'a';
-      return 'b';
-    }
+    function placeTileAt(tile, candidate) {
+      if (candidate.swapNeeded) swapFaces(tile);
 
-    function placeTileAt(tile, end, dir) {
-      const targetFace = matchingShouldBe(dir);
-      const currentFace = tile.a === end.value ? 'a' : (tile.b === end.value ? 'b' : null);
-      if (!currentFace) return false;
-      if (currentFace !== targetFace) swapFaces(tile);
-
-      const rect = getPlacementRect(end, dir);
-      applyOrientation(tile, rect.orientation);
-
-      tile.x = Math.round(rect.x);
-      tile.y = Math.round(rect.y);
+      applyOrientation(tile, candidate.orientation);
+      tile.gx = candidate.gx;
+      tile.gy = candidate.gy;
       tile.placed = true;
 
-      tile.element.style.left = tile.x + 'px';
-      tile.element.style.top = tile.y + 'px';
+      placeElementFromGrid(tile);
+
       tile.element.classList.add('locked');
       tile.element.classList.remove('mini', 'in-hand', 'dragging');
 
       GAME.canvas.appendChild(tile.element);
       GAME.placed.push(tile);
+      resetEndpointsFromPlaced();
       return true;
     }
 
@@ -866,22 +880,23 @@
           const chosen = choosePlacement(tile, pp);
 
           if (!GAME.placed.length) {
-            tile.x = Math.round(pp.x);
-            tile.y = Math.round(pp.y);
+            tile.orientation = 'H';
+            tile.gx = Math.round(pp.x / GAME.CELL);
+            tile.gy = Math.round(pp.y / GAME.CELL);
             tile.placed = true;
-            tile.orientation = 'horizontal';
             tile.element.classList.remove('mini', 'in-hand', 'dragging');
             tile.element.classList.add('locked');
-            tile.element.style.left = tile.x + 'px';
-            tile.element.style.top = tile.y + 'px';
+            placeElementFromGrid(tile);
             GAME.canvas.appendChild(tile.element);
             GAME.placed.push(tile);
             GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
+            resetEndpointsFromPlaced();
             renderHands();
             return;
           }
 
-          if (chosen && placeTileAt(tile, chosen.end, chosen.dir)) {
+          if (chosen) {
+            placeTileAt(tile, chosen);
             GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
           }
 
@@ -972,6 +987,7 @@
       GAME.bank = shuffle(ALL_TILES).map(([a, b]) => createTile(a, b));
       GAME.hands = { 1: [], 2: [] };
       GAME.placed = [];
+      GAME.endpoints = [];
       GAME.currentPlayer = 1;
       clearSnaps();
       GAME.canvas.querySelectorAll('.domino').forEach(el => el.remove());
@@ -1045,6 +1061,4 @@
     renderPanZoom();
   </script>
 </body>
-</html>```
-
-Посмотри, пожалуйста, всё ли у нас здесь в порядке с кодом, не допустили ли мы с тобой ошибку. Просто внимательно просмотри. Если всё хорошо, тогда я пойду вставлять.
+</html>
