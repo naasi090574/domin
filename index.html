@@ -393,10 +393,6 @@
         </div>
       </div>
       <button class="btn primary" id="drawBtn">Взять из банка</button>
-
-      <!-- ИЗМЕНЕНО: кнопку Пропустить ход убрали -->
-      <!-- <button class="btn secondary" id="passBtn">Пропустить ход</button> -->
-
       <button class="btn secondary" id="shuffleBtn">Перемешать</button>
       <button class="btn secondary" id="restartBtn">Начать заново</button>
       <div class="zoom-row">
@@ -470,7 +466,6 @@
       root.style.setProperty('--ui-font', e.target.value);
     });
 
-    // ИЗМЕНЕНО: добавили 7-ю картинку cat
     const FACE_LIBRARY = {
       dino:  { label: 'Динозавр', value: '🦕', src: null },
       duck:  { label: 'Утёнок', value: '🐥', src: null },
@@ -481,7 +476,6 @@
       cat:   { label: 'Котик', value: '🐱', src: null }
     };
 
-    // ИЗМЕНЕНО: добавили gameOver
     const GAME = {
       CELL: 66,
       viewport: document.getElementById('viewport'),
@@ -505,10 +499,17 @@
       endpoints: [],
       nextId: 1,
       activeSnaps: [],
-      gameOver: false
+      gameOver: false,
+      path: {
+        colMin: 4,
+        colMax: 18,
+        rowTop: 2,
+        rowBottom: 10,
+        startGX: 10,
+        startGY: 2
+      }
     };
 
-    // ИЗМЕНЕНО: теперь 28 костяшек из 7 картинок
     const ALL_TILES = (() => {
       const keys = ['dino', 'duck', 'bunny', 'dog', 'bear', 'fox', 'cat'];
       const result = [];
@@ -661,50 +662,50 @@
     }
 
     function resetEndpointsFromPlaced() {
-  const all = [];
+      const all = [];
 
-  for (const tile of GAME.placed) {
-    all.push(...getTileEndpoints(tile));
-  }
-
-  const used = new Set();
-
-  for (let i = 0; i < all.length; i++) {
-    for (let j = i + 1; j < all.length; j++) {
-      if (all[i].value !== all[j].value) continue;
-
-      const a = all[i];
-      const b = all[j];
-
-      const horizontalTouch =
-        a.cellY === b.cellY &&
-        Math.abs(a.cellX - b.cellX) === 1 &&
-        (
-          (a.side === 'right' && b.side === 'left') ||
-          (a.side === 'left' && b.side === 'right')
-        );
-
-      const verticalTouch =
-        a.cellX === b.cellX &&
-        Math.abs(a.cellY - b.cellY) === 1 &&
-        (
-          (a.side === 'bottom' && b.side === 'top') ||
-          (a.side === 'top' && b.side === 'bottom')
-        );
-
-      if (horizontalTouch || verticalTouch) {
-        used.add(`${a.tileId}:${a.side}:${a.cellX}:${a.cellY}`);
-        used.add(`${b.tileId}:${b.side}:${b.cellX}:${b.cellY}`);
+      for (const tile of GAME.placed) {
+        all.push(...getTileEndpoints(tile));
       }
-    }
-  }
 
-  GAME.endpoints = all.filter(e => {
-    const key = `${e.tileId}:${e.side}:${e.cellX}:${e.cellY}`;
-    return !used.has(key);
-  });
-}
-    // ИЗМЕНЕНО: служебные функции для автоперехода хода и конца игры
+      const used = new Set();
+
+      for (let i = 0; i < all.length; i++) {
+        for (let j = i + 1; j < all.length; j++) {
+          if (all[i].value !== all[j].value) continue;
+
+          const a = all[i];
+          const b = all[j];
+
+          const horizontalTouch =
+            a.cellY === b.cellY &&
+            Math.abs(a.cellX - b.cellX) === 1 &&
+            (
+              (a.side === 'right' && b.side === 'left') ||
+              (a.side === 'left' && b.side === 'right')
+            );
+
+          const verticalTouch =
+            a.cellX === b.cellX &&
+            Math.abs(a.cellY - b.cellY) === 1 &&
+            (
+              (a.side === 'bottom' && b.side === 'top') ||
+              (a.side === 'top' && b.side === 'bottom')
+            );
+
+          if (horizontalTouch || verticalTouch) {
+            used.add(`${a.tileId}:${a.side}:${a.cellX}:${a.cellY}`);
+            used.add(`${b.tileId}:${b.side}:${b.cellX}:${b.cellY}`);
+          }
+        }
+      }
+
+      GAME.endpoints = all.filter(e => {
+        const key = `${e.tileId}:${e.side}:${e.cellX}:${e.cellY}`;
+        return !used.has(key);
+      });
+    }
+
     function otherPlayer(player) {
       return player === 1 ? 2 : 1;
     }
@@ -716,7 +717,7 @@
       for (const tile of GAME.hands[player]) {
         for (const end of GAME.endpoints) {
           if (tile.a !== end.value && tile.b !== end.value) continue;
-          for (const dir of allowedDirections(end.side)) {
+          for (const dir of allowedDirections(end)) {
             const candidate = placementFor(end, dir, tile);
             if (candidate) return true;
           }
@@ -846,23 +847,32 @@
       GAME.activeSnaps.push(z);
     }
 
-    function allowedDirections(side) {
-      if (side === 'right') return ['right', 'up', 'down'];
-      if (side === 'left') return ['left', 'up', 'down'];
-      if (side === 'top') return ['up', 'left', 'right'];
-      return ['down', 'left', 'right'];
+    function allowedDirections(endpoint) {
+      const p = GAME.path;
+
+      if (endpoint.side === 'right') {
+        if (endpoint.cellX < p.colMax) return ['right'];
+        if (endpoint.cellY < p.rowBottom) return ['down'];
+        return [];
+      }
+
+      if (endpoint.side === 'left') {
+        if (endpoint.cellX > p.colMin) return ['left'];
+        if (endpoint.cellY < p.rowBottom) return ['down'];
+        return [];
+      }
+
+      if (endpoint.side === 'bottom') {
+        if (endpoint.cellY < p.rowBottom) return ['down'];
+        if (endpoint.cellX === p.colMax) return ['left'];
+        if (endpoint.cellX === p.colMin) return ['right'];
+        return [];
+      }
+
+      return [];
     }
 
     function placementFor(endpoint, dir, tile) {
-// 🚫 запрещаем ставить "назад" в цепочку
-if (
-  (endpoint.side === 'right' && dir === 'left') ||
-  (endpoint.side === 'left' && dir === 'right') ||
-  (endpoint.side === 'top' && dir === 'down') ||
-  (endpoint.side === 'bottom' && dir === 'up')
-) {
-  return null;
-}
       const occupied = buildOccupiedSet();
 
       let orientation = 'H';
@@ -924,7 +934,7 @@ if (
       for (const end of GAME.endpoints) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
 
-        for (const dir of allowedDirections(end.side)) {
+        for (const dir of allowedDirections(end)) {
           const candidate = placementFor(end, dir, tile);
           if (!candidate) continue;
 
@@ -949,7 +959,7 @@ if (
       for (const end of GAME.endpoints) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
 
-        for (const dir of allowedDirections(end.side)) {
+        for (const dir of allowedDirections(end)) {
           const candidate = placementFor(end, dir, tile);
           if (!candidate) continue;
 
@@ -991,7 +1001,7 @@ if (
       tile.element.onpointerdown = (e) => {
         if (tile.placed) return;
         if (tile.player !== GAME.currentPlayer) return;
-        if (GAME.gameOver) return; // ИЗМЕНЕНО
+        if (GAME.gameOver) return;
 
         e.preventDefault();
         tile.element.classList.add('dragging');
@@ -1024,12 +1034,11 @@ if (
           const chosen = choosePlacement(tile, pp);
 
           if (!GAME.placed.length) {
-            // ИЗМЕНЕНО: после первого хода тоже автоматический переход
             const current = GAME.currentPlayer;
 
             tile.orientation = 'H';
-            tile.gx = Math.round(pp.x / GAME.CELL);
-            tile.gy = Math.round(pp.y / GAME.CELL);
+            tile.gx = GAME.path.startGX;
+            tile.gy = GAME.path.startGY;
             tile.placed = true;
             tile.element.classList.remove('mini', 'in-hand', 'dragging');
             tile.element.classList.add('locked');
@@ -1044,7 +1053,6 @@ if (
           }
 
           if (chosen) {
-            // ИЗМЕНЕНО: автоматический переход после успешного хода
             const current = GAME.currentPlayer;
             placeTileAt(tile, chosen);
             GAME.hands[current] = GAME.hands[current].filter(t => t.id !== tile.id);
@@ -1121,7 +1129,6 @@ if (
       return GAME.placed.find(t => t.id === id) || null;
     }
 
-    // ИЗМЕНЕНО: добор из банка с проверкой блокировки
     function drawTile() {
       if (GAME.gameOver) return;
       if (!GAME.bank.length) {
@@ -1138,9 +1145,6 @@ if (
       afterDrawCheck();
     }
 
-    // ИЗМЕНЕНО: функции passTurn больше нет
-
-    // ИЗМЕНЕНО: старт по 7 костяшек, в банке 14
     function restartGame() {
       GAME.bank = shuffle(ALL_TILES).map(([a, b]) => createTile(a, b));
       GAME.hands = { 1: [], 2: [] };
@@ -1192,8 +1196,6 @@ if (
     document.getElementById('drawBtn').onclick = drawTile;
     document.getElementById('shuffleBtn').onclick = shuffleHands;
     document.getElementById('restartBtn').onclick = restartGame;
-
-    // ИЗМЕНЕНО: обработчик passBtn удалён
 
     GAME.viewport.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.domino')) return;
