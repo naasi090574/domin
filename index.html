@@ -2,45 +2,56 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Domino</title>
+<title>Домино</title>
 
 <style>
 body {
-  margin: 0;
-  background: #e6e6e6;
-  font-family: sans-serif;
+  margin:0;
+  background:#e5e5e5;
+  overflow:hidden;
+  font-family:sans-serif;
 }
 
 #board {
-  width: 100%;
-  height: 80vh;
-  position: relative;
-  background: #f5f5f5;
+  width:100vw;
+  height:100vh;
+  position:relative;
 }
 
+/* ДОМИНОШКА */
 .domino {
-  position: absolute;
-  width: 120px;
-  height: 60px;
-  background: #d8cccc;
-  border-radius: 14px;
-  display: flex;
-  overflow: hidden;
-  border: 2px solid #999;
-  cursor: grab;
+  position:absolute;
+  width:120px;
+  height:60px;
+  background-image:url("https://img.genially.com/66f849d0f7b39c0016fdd814/1b542f23-1e28-4a88-b5a2-1d88bdef2067.png");
+  background-size:cover;
+  display:flex;
 }
 
+/* половинки */
 .half {
-  width: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
+  width:50%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
 }
 
-.divider {
-  width: 2px;
-  background: #555;
+.half img {
+  width:70%;
+  height:70%;
+  object-fit:contain;
+}
+
+/* подсветка */
+.highlight {
+  position:absolute;
+  width:120px;
+  height:60px;
+  border:2px solid #8b5cf6;
+  border-radius:12px;
+  pointer-events:none;
 }
 </style>
 </head>
@@ -50,104 +61,137 @@ body {
 <div id="board"></div>
 
 <script>
+
+const SIZE = 60;
 const board = document.getElementById("board");
 
-let tiles = [
-  ["🍌","🔔"],
-  ["🔔","🔔"],
-  ["📚","🚗"],
-  ["🚗","🐱"]
-];
+let chain = [];
 
-let ends = [];
+function createDomino(x, y, left, right, vertical=false){
 
-function createTile(data, x=100, y=300) {
+  const el = document.createElement("div");
+  el.className = "domino";
 
-  const tile = document.createElement("div");
-  tile.className = "domino";
+  if(vertical){
+    el.style.width = "60px";
+    el.style.height = "120px";
+    el.style.flexDirection = "column";
+  }
 
-  const left = document.createElement("div");
-  left.className = "half";
-  left.textContent = data[0];
+  el.style.left = x + "px";
+  el.style.top = y + "px";
 
-  const divider = document.createElement("div");
-  divider.className = "divider";
+  const leftDiv = document.createElement("div");
+  leftDiv.className = "half";
+  const rightDiv = document.createElement("div");
+  rightDiv.className = "half";
 
-  const right = document.createElement("div");
-  right.className = "half";
-  right.textContent = data[1];
+  leftDiv.innerHTML = `<img src="${left}">`;
+  rightDiv.innerHTML = `<img src="${right}">`;
 
-  tile.append(left, divider, right);
-  board.appendChild(tile);
+  el.appendChild(leftDiv);
+  el.appendChild(rightDiv);
 
-  tile.style.left = x + "px";
-  tile.style.top = y + "px";
+  board.appendChild(el);
 
-  makeDrag(tile, data);
+  makeDraggable(el, {left,right});
 
-  return tile;
 }
-function makeDrag(tile, data) {
 
-  tile.onmousedown = (e) => {
+function makeDraggable(el, data){
 
-    let shiftX = e.clientX - tile.getBoundingClientRect().left;
-    let shiftY = e.clientY - tile.getBoundingClientRect().top;
+  el.onmousedown = function(e){
 
-    document.onmousemove = (e) => {
-      tile.style.left = e.pageX - shiftX + "px";
-      tile.style.top = e.pageY - shiftY + "px";
-    };
+    const shiftX = e.clientX - el.offsetLeft;
+    const shiftY = e.clientY - el.offsetTop;
 
-    document.onmouseup = () => {
-      document.onmousemove = null;
+    function moveAt(pageX, pageY){
+      el.style.left = pageX - shiftX + 'px';
+      el.style.top = pageY - shiftY + 'px';
+    }
+
+    function onMouseMove(e){
+      moveAt(e.pageX, e.pageY);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+
+    document.onmouseup = function(){
+
+      document.removeEventListener('mousemove', onMouseMove);
       document.onmouseup = null;
 
-      tryAttach(tile, data);
+      trySnap(el, data);
     };
   };
 }
-function tryAttach(tile, data) {
 
-  if (ends.length === 0) {
-    ends.push({
-      value: data[0],
-      x: parseInt(tile.style.left),
-      y: parseInt(tile.style.top)
-    });
+function trySnap(el, data){
 
-    ends.push({
-      value: data[1],
-      x: parseInt(tile.style.left) + 120,
-      y: parseInt(tile.style.top)
-    });
+  for(let item of chain){
 
-    return;
-  }
+    const dx = el.offsetLeft - item.x;
+    const dy = el.offsetTop - item.y;
 
-  for (let end of ends) {
-
-    if (end.value === data[0] || end.value === data[1]) {
-
-      if (end.value === data[1]) {
-        data = [data[1], data[0]];
-        tile.children[0].textContent = data[0];
-        tile.children[2].textContent = data[1];
+    // ПРАВО
+    if(Math.abs(dx - SIZE*2) < 30 && Math.abs(dy) < 30){
+      if(data.left === item.right){
+        place(el, item.x + SIZE*2, item.y, false);
+        return;
       }
+    }
 
-      tile.style.left = end.x + "px";
-      tile.style.top = end.y + "px";
+    // ЛЕВО
+    if(Math.abs(dx + SIZE*2) < 30 && Math.abs(dy) < 30){
+      if(data.right === item.left){
+        place(el, item.x - SIZE*2, item.y, false);
+        return;
+      }
+    }
 
-      end.value = data[1];
+    // ВНИЗ
+    if(Math.abs(dy - SIZE*2) < 30 && Math.abs(dx) < 30){
+      if(data.left === item.right){
+        place(el, item.x, item.y + SIZE*2, true);
+        return;
+      }
+    }
 
-      return;
+    // ВВЕРХ
+    if(Math.abs(dy + SIZE*2) < 30 && Math.abs(dx) < 30){
+      if(data.right === item.left){
+        place(el, item.x, item.y - SIZE*2, true);
+        return;
+      }
     }
   }
 }
 
-tiles.forEach((t,i)=>{
-  createTile(t, 50 + i*130, 400);
-});
+function place(el, x, y, vertical){
+
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+
+  if(vertical){
+    el.style.width = "60px";
+    el.style.height = "120px";
+    el.style.flexDirection = "column";
+  }
+
+  chain.push({
+    x,
+    y,
+    left: el.children[0].querySelector("img").src,
+    right: el.children[1].querySelector("img").src
+  });
+}
+
+/* старт */
+createDomino(400,300,"https://cdn-icons-png.flaticon.com/512/616/616408.png","https://cdn-icons-png.flaticon.com/512/616/616408.png");
+
+createDomino(200,200,"https://cdn-icons-png.flaticon.com/512/616/616408.png","https://cdn-icons-png.flaticon.com/512/188/188987.png");
+createDomino(200,350,"https://cdn-icons-png.flaticon.com/512/188/188987.png","https://cdn-icons-png.flaticon.com/512/616/616408.png");
+
 </script>
 
 </body>
