@@ -15,12 +15,13 @@
       --tile-bg: #d8c8c8;
       --tile-border: #ece7e7;
       --tile-divider: #666666;
-      --snap-color: rgba(108, 51, 255, 0.5);
+      --snap-color: rgba(108, 51, 255, 0.45);
       --ui-font: "DM Sans", Arial, sans-serif;
       --left-w: 250px;
       --right-w: 320px;
       --strip-h: 110px;
-      --cell: 66px;
+      --tile-w: 132px;
+      --tile-h: 66px;
     }
 
     * { box-sizing: border-box; }
@@ -87,26 +88,22 @@
       font-weight: 800;
       cursor: pointer;
     }
-
     .btn.primary {
       background: var(--button-bg);
       color: var(--button-text);
       box-shadow: 0 10px 25px rgba(108, 51, 255, .18);
     }
-
     .btn.secondary {
       background: transparent;
       color: var(--text-color);
       border: 3px solid var(--button-bg);
     }
-
     .zoom-row {
       margin-top: auto;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-
     .zoom {
       min-height: 70px;
       font-size: 32px;
@@ -134,47 +131,34 @@
       overflow-x: auto;
       border-bottom: 1px solid rgba(0,0,0,.06);
     }
-
-    .strip.bottom {
-      border-top: 1px solid rgba(0,0,0,.06);
-      border-bottom: 0;
-    }
-
-    .strip-title {
-      font-weight: 800;
-      opacity: .78;
-      margin-right: 8px;
-      flex: 0 0 auto;
-    }
+    .strip.bottom { border-top: 1px solid rgba(0,0,0,.06); border-bottom: 0; }
+    .strip-title { font-weight: 800; opacity: .78; margin-right: 8px; }
 
     .board-shell {
       position: relative;
       background: var(--board-bg);
       overflow: hidden;
     }
-
     .board-viewport {
       position: absolute;
       inset: 0;
       overflow: hidden;
       cursor: grab;
     }
-
     .board-viewport.panning { cursor: grabbing; }
-
     .board-canvas {
       position: absolute;
       left: 0;
       top: 0;
-      width: 4200px;
-      height: 3200px;
+      width: 3000px;
+      height: 2200px;
       transform-origin: top left;
     }
 
     .domino {
       position: absolute;
-      width: calc(var(--cell) * 2);
-      height: var(--cell);
+      width: var(--tile-w);
+      height: var(--tile-h);
       background: var(--tile-bg);
       border: 3px solid var(--tile-border);
       border-radius: 16px;
@@ -186,16 +170,14 @@
       user-select: none;
       touch-action: none;
     }
-
     .domino.vertical {
-      width: var(--cell);
-      height: calc(var(--cell) * 2);
+      width: var(--tile-h);
+      height: var(--tile-w);
       grid-template-columns: 1fr;
       grid-template-rows: 1fr 2px 1fr;
     }
-
     .domino.in-hand { cursor: grab; }
-    .domino.dragging { opacity: .95; z-index: 9999; }
+    .domino.dragging { opacity: .92; z-index: 9999; }
     .domino.locked { cursor: default; }
 
     .face {
@@ -205,7 +187,6 @@
       place-items: center;
       padding: 6px;
     }
-
     .face-content {
       width: 100%;
       height: 100%;
@@ -216,7 +197,6 @@
       font-size: 42px;
       line-height: 1;
     }
-
     .face-content img {
       max-width: 78%;
       max-height: 78%;
@@ -224,14 +204,12 @@
       pointer-events: none;
       user-select: none;
     }
-
     .divider {
       width: 2px;
       height: 72%;
       background: var(--tile-divider);
       border-radius: 2px;
     }
-
     .domino.vertical .divider {
       width: 72%;
       height: 2px;
@@ -247,7 +225,6 @@
       box-shadow: none;
       background: color-mix(in srgb, var(--tile-bg) 96%, white 4%);
     }
-
     .mini.vertical { width: 54px; height: 108px; }
     .mini .face-content { font-size: 24px; }
     .mini .face-content img { max-width: 72%; max-height: 72%; }
@@ -256,36 +233,32 @@
       position: absolute;
       border: 3px solid var(--snap-color);
       border-radius: 16px;
-      background: color-mix(in srgb, var(--snap-color) 14%, white 86%);
+      background: color-mix(in srgb, var(--snap-color) 16%, white 84%);
       pointer-events: none;
       opacity: 0;
       transition: opacity .08s ease;
       z-index: 20;
       box-shadow: 0 8px 18px rgba(108, 51, 255, .10);
     }
-
     .snap-zone::after {
-      content: "";
+      content: '';
       position: absolute;
       background: color-mix(in srgb, var(--snap-color) 70%, #666 30%);
       border-radius: 2px;
       opacity: .9;
     }
-
     .snap-zone.horizontal::after {
       width: 2px;
       height: 72%;
       left: calc(50% - 1px);
       top: 14%;
     }
-
     .snap-zone.vertical::after {
       width: 72%;
       height: 2px;
       left: 14%;
       top: calc(50% - 1px);
     }
-
     .snap-zone.visible { opacity: 1; }
 
     .right {
@@ -293,25 +266,14 @@
       border-left: 1px solid rgba(0,0,0,.08);
       overflow-y: auto;
     }
-
-    .panel-title {
-      font-size: 20px;
-      font-weight: 900;
-      margin-bottom: 12px;
-    }
-
+    .panel-title { font-size: 20px; font-weight: 900; margin-bottom: 12px; }
     .group {
       background: rgba(255,255,255,.12);
       border-radius: 18px;
       padding: 14px;
       margin-bottom: 14px;
     }
-
-    .group h3 {
-      margin: 0 0 10px;
-      font-size: 15px;
-    }
-
+    .group h3 { margin: 0 0 10px; font-size: 15px; }
     .row {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -320,9 +282,7 @@
       margin-bottom: 10px;
       font-size: 14px;
     }
-
     .row:last-child { margin-bottom: 0; }
-
     input[type="color"] {
       width: 44px;
       height: 32px;
@@ -332,7 +292,6 @@
       cursor: pointer;
       border-radius: 10px;
     }
-
     select {
       width: 100%;
       padding: 10px 12px;
@@ -341,12 +300,10 @@
       font: inherit;
       background: rgba(255,255,255,.92);
     }
-
     .face-map {
       display: grid;
       gap: 10px;
     }
-
     .face-item {
       background: rgba(255,255,255,.18);
       border-radius: 14px;
@@ -356,7 +313,6 @@
       gap: 10px;
       align-items: center;
     }
-
     .face-preview {
       width: 46px;
       height: 46px;
@@ -367,34 +323,17 @@
       font-size: 26px;
       overflow: hidden;
     }
-
-    .face-preview img {
-      max-width: 80%;
-      max-height: 80%;
-      object-fit: contain;
-    }
-
-    .small-note {
-      font-size: 12px;
-      opacity: .75;
-      line-height: 1.35;
-      margin-top: 4px;
-    }
+    .face-preview img { max-width: 80%; max-height: 80%; object-fit: contain; }
+    .small-note { font-size: 12px; opacity: .75; line-height: 1.35; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="app">
     <aside class="left">
       <div class="turn" id="turnLabel">Ход: Игрок 1</div>
-      <div class="bank">
-        <div>
-          <div class="bank-count" id="bankCount">14</div>
-          <div class="bank-label">В банке</div>
-        </div>
-      </div>
+      <div class="bank"><div><div class="bank-count" id="bankCount">14</div><div class="bank-label">В банке</div></div></div>
       <button class="btn primary" id="drawBtn">Взять из банка</button>
-      <button class="btn secondary" id="passBtn">Пропустить ход</button>
-      <button class="btn secondary" id="shuffleBtn">Перемешать</button>
+            <button class="btn secondary" id="shuffleBtn">Перемешать</button>
       <button class="btn secondary" id="restartBtn">Начать заново</button>
       <div class="zoom-row">
         <button class="zoom" id="zoomOut">−</button>
@@ -403,53 +342,32 @@
     </aside>
 
     <main class="center">
-      <section class="strip top" id="player2Strip">
-        <div class="strip-title">ИГРОК 2</div>
-      </section>
-
-      <section class="board-shell">
-        <div class="board-viewport" id="viewport">
-          <div class="board-canvas" id="canvas"></div>
-        </div>
-      </section>
-
-      <section class="strip bottom" id="player1Strip">
-        <div class="strip-title">ИГРОК 1</div>
-      </section>
+      <section class="strip top" id="player2Strip"><div class="strip-title">ИГРОК 2</div></section>
+      <section class="board-shell"><div class="board-viewport" id="viewport"><div class="board-canvas" id="canvas"></div></div></section>
+      <section class="strip bottom" id="player1Strip"><div class="strip-title">ИГРОК 1</div></section>
     </main>
 
     <aside class="right">
       <div class="panel-title">Редактор оформления</div>
-
       <div class="group">
         <h3>Фоны</h3>
         <label class="row"><span>Фон страницы</span><input type="color" data-var="--page-bg" value="#e7b1ae"></label>
         <label class="row"><span>Цвет игрового поля</span><input type="color" data-var="--board-bg" value="#f3f3f3"></label>
         <label class="row"><span>Фон панели</span><input type="color" data-var="--panel-bg" value="#9fb0a3"></label>
       </div>
-
       <div class="group">
         <h3>Интерфейс</h3>
         <label class="row"><span>Цвет кнопок</span><input type="color" data-var="--button-bg" value="#6c33ff"></label>
         <label class="row"><span>Цвет текста кнопок</span><input type="color" data-var="--button-text" value="#ffffff"></label>
         <label class="row"><span>Общий цвет текста</span><input type="color" data-var="--text-color" value="#111111"></label>
-        <div class="row" style="grid-template-columns:1fr;">
-          <select id="fontSelect">
-            <option value='"DM Sans", Arial, sans-serif'>DM Sans</option>
-            <option value='Arial, sans-serif'>Arial</option>
-            <option value='Verdana, sans-serif'>Verdana</option>
-            <option value='"Trebuchet MS", sans-serif'>Trebuchet MS</option>
-          </select>
-        </div>
+        <div class="row" style="grid-template-columns:1fr;"><select id="fontSelect"><option value='"DM Sans", Arial, sans-serif'>DM Sans</option><option value='Arial, sans-serif'>Arial</option><option value='Verdana, sans-serif'>Verdana</option><option value='"Trebuchet MS", sans-serif'>Trebuchet MS</option></select></div>
       </div>
-
       <div class="group">
         <h3>Плитка домино</h3>
         <label class="row"><span>Фон плитки</span><input type="color" data-var="--tile-bg" value="#d8c8c8"></label>
         <label class="row"><span>Цвет разделительной линии</span><input type="color" data-var="--tile-divider" value="#666666"></label>
         <label class="row"><span>Цвет границы плитки</span><input type="color" data-var="--tile-border" value="#ece7e7"></label>
       </div>
-
       <div class="group">
         <h3>Картинки граней</h3>
         <div class="face-map" id="faceMap"></div>
@@ -473,11 +391,11 @@
       bunny: { label: 'Заяц', value: '🐰', src: null },
       dog:   { label: 'Собачка', value: '🐶', src: null },
       bear:  { label: 'Мишка', value: '🧸', src: null },
-      fox:   { label: 'Лиса', value: '🦊', src: null }
+      fox:   { label: 'Лиса', value: '🦊', src: null },
+      cat:   { label: 'Котик', value: '🐱', src: null }
     };
 
     const GAME = {
-      CELL: 66,
       viewport: document.getElementById('viewport'),
       canvas: document.getElementById('canvas'),
       player1Strip: document.getElementById('player1Strip'),
@@ -485,27 +403,28 @@
       turnLabel: document.getElementById('turnLabel'),
       bankCount: document.getElementById('bankCount'),
       scale: 1,
-      panX: -250,
-      panY: -220,
+      panX: -170,
+      panY: -260,
       panning: false,
       pointerStartX: 0,
       pointerStartY: 0,
       startPanX: 0,
       startPanY: 0,
+      tileW: 132,
+      tileH: 66,
+      snapThickness: 10,
       currentPlayer: 1,
       bank: [],
-      hands: { 1: [], 2: [] },
+      hands: {1: [], 2: []},
       placed: [],
-      endpoints: [],
       nextId: 1,
       activeSnaps: []
     };
 
     const ALL_TILES = [
-      ['dino','duck'], ['duck','duck'], ['duck','dino'], ['dino','bunny'],
-      ['bunny','fox'], ['dog','bear'], ['bear','fox'], ['fox','dog'],
-      ['duck','bunny'], ['bunny','bear'], ['fox','fox'], ['dog','dog'],
-      ['dino','dog'], ['bear','duck']
+      ['dino','duck'], ['duck','duck'], ['duck','dino'], ['dino','bunny'], ['bunny','fox'],
+      ['dog','bear'], ['bear','fox'], ['fox','dog'], ['duck','bunny'], ['bunny','bear'],
+      ['fox','fox'], ['dog','dog'], ['dino','dog'], ['bear','duck']
     ];
 
     function shuffle(array) {
@@ -533,18 +452,16 @@
       el.appendChild(content);
     }
 
-    function createDominoElement(tile, mini = false) {
+    function createDominoElement(tile, mini=false) {
       const el = document.createElement('div');
       el.className = mini ? 'domino mini in-hand' : 'domino in-hand';
-      if (tile.orientation === 'V') el.classList.add('vertical');
+      if (tile.orientation === 'vertical') el.classList.add('vertical');
       el.dataset.id = tile.id;
 
       const aFace = document.createElement('div');
       aFace.className = 'face face-a';
-
       const divider = document.createElement('div');
       divider.className = 'divider';
-
       const bFace = document.createElement('div');
       bFace.className = 'face face-b';
 
@@ -555,17 +472,7 @@
     }
 
     function createTile(a, b) {
-      return {
-        id: 't' + (GAME.nextId++),
-        a,
-        b,
-        orientation: 'H',
-        gx: 0,
-        gy: 0,
-        placed: false,
-        element: null,
-        player: 1
-      };
+      return { id: 't' + (GAME.nextId++), a, b, orientation: 'horizontal', x: 0, y: 0, placed: false, element: null, player: 1 };
     }
 
     function swapFaces(tile) {
@@ -576,122 +483,63 @@
 
     function applyOrientation(tile, orientation) {
       tile.orientation = orientation;
-      tile.element.classList.toggle('vertical', orientation === 'V');
+      tile.element.classList.toggle('vertical', orientation === 'vertical');
     }
 
-    function getPixelRectFromGrid(tile) {
-      if (tile.orientation === 'H') {
+    function getTileSize(orientation) {
+      return orientation === 'vertical'
+        ? { w: GAME.tileH, h: GAME.tileW }
+        : { w: GAME.tileW, h: GAME.tileH };
+    }
+
+    function getEndpoints(tile) {
+      const { x, y, a, b, orientation } = tile;
+      const s = getTileSize(orientation);
+      if (orientation === 'horizontal') {
         return {
-          x: tile.gx * GAME.CELL,
-          y: tile.gy * GAME.CELL,
-          w: GAME.CELL * 2,
-          h: GAME.CELL
+          left: { tileId: tile.id, side: 'left', value: a, x, y: y + s.h / 2 },
+          right:{ tileId: tile.id, side: 'right', value: b, x: x + s.w, y: y + s.h / 2 }
         };
       }
       return {
-        x: tile.gx * GAME.CELL,
-        y: tile.gy * GAME.CELL,
-        w: GAME.CELL,
-        h: GAME.CELL * 2
+        top:    { tileId: tile.id, side: 'top', value: a, x: x + s.w / 2, y },
+        bottom: { tileId: tile.id, side: 'bottom', value: b, x: x + s.w / 2, y: y + s.h }
       };
     }
 
-    function placeElementFromGrid(tile) {
-      const r = getPixelRectFromGrid(tile);
-      tile.element.style.left = r.x + 'px';
-      tile.element.style.top = r.y + 'px';
-    }
-
-    function getOccupiedCells(tile) {
-      if (tile.orientation === 'H') {
-        return [
-          { x: tile.gx, y: tile.gy, face: 'a' },
-          { x: tile.gx + 1, y: tile.gy, face: 'b' }
-        ];
-      }
-      return [
-        { x: tile.gx, y: tile.gy, face: 'a' },
-        { x: tile.gx, y: tile.gy + 1, face: 'b' }
-      ];
-    }
-
-    function cellKey(x, y) {
-      return `${x}:${y}`;
-    }
-
-    function buildOccupiedSet(ignoreTileId = null) {
-      const set = new Set();
-      for (const tile of GAME.placed) {
-        if (tile.id === ignoreTileId) continue;
-        for (const c of getOccupiedCells(tile)) {
-          set.add(cellKey(c.x, c.y));
-        }
-      }
-      return set;
-    }
-
-    function makeEndpoint(tileId, side, value, cellX, cellY) {
-      return { tileId, side, value, cellX, cellY };
-    }
-
-    function getTileEndpoints(tile) {
-      const cells = getOccupiedCells(tile);
-      if (tile.orientation === 'H') {
-        return [
-          makeEndpoint(tile.id, 'left', tile.a, cells[0].x, cells[0].y),
-          makeEndpoint(tile.id, 'right', tile.b, cells[1].x, cells[1].y)
-        ];
-      }
-      return [
-        makeEndpoint(tile.id, 'top', tile.a, cells[0].x, cells[0].y),
-        makeEndpoint(tile.id, 'bottom', tile.b, cells[1].x, cells[1].y)
-      ];
-    }
-
-    function resetEndpointsFromPlaced() {
+    function computeOpenEndpoints() {
       const all = [];
       for (const tile of GAME.placed) {
-        all.push(...getTileEndpoints(tile));
+        const ends = getEndpoints(tile);
+        all.push(...Object.values(ends));
       }
-
       const used = new Set();
       for (let i = 0; i < all.length; i++) {
         for (let j = i + 1; j < all.length; j++) {
           if (all[i].value !== all[j].value) continue;
-
-          const touches =
-            (all[i].side === 'right'  && all[j].side === 'left'   && all[i].cellX + 1 === all[j].cellX && all[i].cellY === all[j].cellY) ||
-            (all[i].side === 'left'   && all[j].side === 'right'  && all[i].cellX - 1 === all[j].cellX && all[i].cellY === all[j].cellY) ||
-            (all[i].side === 'bottom' && all[j].side === 'top'    && all[i].cellY + 1 === all[j].cellY && all[i].cellX === all[j].cellX) ||
-            (all[i].side === 'top'    && all[j].side === 'bottom' && all[i].cellY - 1 === all[j].cellY && all[i].cellX === all[j].cellX);
-
-          if (touches) {
+          if (Math.abs(all[i].x - all[j].x) <= 4 && Math.abs(all[i].y - all[j].y) <= 4) {
             used.add(`${all[i].tileId}:${all[i].side}`);
             used.add(`${all[j].tileId}:${all[j].side}`);
           }
         }
       }
-
-      GAME.endpoints = all.filter(e => !used.has(`${e.tileId}:${e.side}`));
+      return all.filter(e => !used.has(`${e.tileId}:${e.side}`));
     }
 
     function renderHands() {
-      [1, 2].forEach(player => {
+      [1,2].forEach(player => {
         const strip = player === 1 ? GAME.player1Strip : GAME.player2Strip;
         strip.querySelectorAll('.mini.domino').forEach(el => el.remove());
-
         GAME.hands[player].forEach(tile => {
           if (!tile.element) tile.element = createDominoElement(tile, true);
           tile.element.className = 'domino mini in-hand';
           tile.element.classList.remove('vertical', 'locked');
-          tile.orientation = 'H';
           renderFace(tile.element.querySelector('.face-a'), tile.a);
           renderFace(tile.element.querySelector('.face-b'), tile.b);
           enableDrag(tile);
           strip.appendChild(tile.element);
         });
       });
-
       GAME.turnLabel.textContent = `Ход: Игрок ${GAME.currentPlayer}`;
       GAME.bankCount.textContent = String(GAME.bank.length);
     }
@@ -701,13 +549,13 @@
       GAME.activeSnaps = [];
     }
 
-    function addSnapZone(px, py, orientation) {
+    function addSnapZone(x, y, w, h, orientation) {
       const z = document.createElement('div');
-      z.className = `snap-zone ${orientation === 'H' ? 'horizontal' : 'vertical'} visible`;
-      z.style.left = px + 'px';
-      z.style.top = py + 'px';
-      z.style.width = (orientation === 'H' ? GAME.CELL * 2 : GAME.CELL) + 'px';
-      z.style.height = (orientation === 'H' ? GAME.CELL : GAME.CELL * 2) + 'px';
+      z.className = `snap-zone visible ${orientation}`;
+      z.style.left = `${x}px`;
+      z.style.top = `${y}px`;
+      z.style.width = `${w}px`;
+      z.style.height = `${h}px`;
       GAME.canvas.appendChild(z);
       GAME.activeSnaps.push(z);
     }
@@ -719,75 +567,57 @@
       return ['down', 'left', 'right'];
     }
 
-    function placementFor(endpoint, dir, tile) {
-      const occupied = buildOccupiedSet();
+    function getPlacementRect(end, dir) {
+      // Стыковка должна идти ребром конкретной картинки.
+      // Для поворотов используем координаты так, чтобы совпадали именно края половинок.
+      const halfW = GAME.tileW / 2;
 
-      let orientation = 'H';
-      let gx = 0;
-      let gy = 0;
-      let matchFace = null;
-
-      if (dir === 'right') {
-        orientation = 'H';
-        gx = endpoint.cellX + 1;
-        gy = endpoint.cellY;
-        matchFace = 'a';
+      if (end.side === 'right') {
+        if (dir === 'right') {
+          return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+        }
+        if (dir === 'up') {
+          return { x: end.x - GAME.tileH / 2, y: end.y - halfW - GAME.tileH, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+        }
+        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
       }
 
-      if (dir === 'left') {
-        orientation = 'H';
-        gx = endpoint.cellX - 2;
-        gy = endpoint.cellY;
-        matchFace = 'b';
+      if (end.side === 'left') {
+        if (dir === 'left') {
+          return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+        }
+        if (dir === 'up') {
+          return { x: end.x - GAME.tileH / 2, y: end.y - halfW - GAME.tileH, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+        }
+        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+      }
+
+      if (end.side === 'top') {
+        if (dir === 'up') {
+          return { x: end.x - GAME.tileH / 2, y: end.y - GAME.tileW, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
+        }
+        if (dir === 'left') {
+          return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
+        }
+        return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
       }
 
       if (dir === 'down') {
-        orientation = 'V';
-        gx = endpoint.cellX;
-        gy = endpoint.cellY + 1;
-        matchFace = 'a';
+        return { x: end.x - GAME.tileH / 2, y: end.y, w: GAME.tileH, h: GAME.tileW, orientation: 'vertical' };
       }
-
-      if (dir === 'up') {
-        orientation = 'V';
-        gx = endpoint.cellX;
-        gy = endpoint.cellY - 2;
-        matchFace = 'b';
+      if (dir === 'left') {
+        return { x: end.x - GAME.tileW, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
       }
-
-      const matchesA = tile.a === endpoint.value;
-      const matchesB = tile.b === endpoint.value;
-      if (!matchesA && !matchesB) return null;
-
-      const swapNeeded =
-        (matchFace === 'a' && !matchesA) ||
-        (matchFace === 'b' && !matchesB);
-
-      const cells =
-        orientation === 'H'
-          ? [{ x: gx, y: gy }, { x: gx + 1, y: gy }]
-          : [{ x: gx, y: gy }, { x: gx, y: gy + 1 }];
-
-      if (occupied.has(cellKey(cells[0].x, cells[0].y)) || occupied.has(cellKey(cells[1].x, cells[1].y))) {
-        return null;
-      }
-
-      return { orientation, gx, gy, swapNeeded, dir, endpoint };
+      return { x: end.x, y: end.y - GAME.tileH / 2, w: GAME.tileW, h: GAME.tileH, orientation: 'horizontal' };
     }
 
     function showSnapsForDrag(tile) {
       clearSnaps();
-
-      for (const end of GAME.endpoints) {
+      for (const end of computeOpenEndpoints()) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
-
         for (const dir of allowedDirections(end.side)) {
-          const candidate = placementFor(end, dir, tile);
-          if (!candidate) continue;
-
-          const px = candidate.gx * GAME.CELL;
-          const py = candidate.gy * GAME.CELL;
-          addSnapZone(px, py, candidate.orientation);
+          const rect = getPlacementRect(end, dir);
+          addSnapZone(rect.x, rect.y, rect.w, rect.h, rect.orientation);
         }
       }
     }
@@ -802,45 +632,42 @@
 
     function choosePlacement(tile, pointer) {
       let best = null;
-
-      for (const end of GAME.endpoints) {
+      for (const end of computeOpenEndpoints()) {
         if (tile.a !== end.value && tile.b !== end.value) continue;
-
         for (const dir of allowedDirections(end.side)) {
-          const candidate = placementFor(end, dir, tile);
-          if (!candidate) continue;
-
-          const cx = candidate.gx * GAME.CELL + (candidate.orientation === 'H' ? GAME.CELL : GAME.CELL / 2);
-          const cy = candidate.gy * GAME.CELL + (candidate.orientation === 'H' ? GAME.CELL / 2 : GAME.CELL);
-
+          const rect = getPlacementRect(end, dir);
+          const cx = rect.x + rect.w / 2;
+          const cy = rect.y + rect.h / 2;
           const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
-          if (dist > 140) continue;
-
-          if (!best || dist < best.dist) {
-            best = { ...candidate, dist };
-          }
+          if (dist > 120) continue;
+          if (!best || dist < best.dist) best = { end, dir, rect, dist };
         }
       }
-
       return best;
     }
 
-    function placeTileAt(tile, candidate) {
-      if (candidate.swapNeeded) swapFaces(tile);
+    function matchingShouldBe(tile, anchorValue, dir) {
+      if (dir === 'right' || dir === 'down') return 'a';
+      return 'b';
+    }
 
-      applyOrientation(tile, candidate.orientation);
-      tile.gx = candidate.gx;
-      tile.gy = candidate.gy;
+    function placeTileAt(tile, end, dir) {
+      const targetFace = matchingShouldBe(tile, end.value, dir);
+      const currentFace = tile.a === end.value ? 'a' : (tile.b === end.value ? 'b' : null);
+      if (!currentFace) return false;
+      if (currentFace !== targetFace) swapFaces(tile);
+
+      const rect = getPlacementRect(end, dir);
+      applyOrientation(tile, rect.orientation);
+      tile.x = Math.round(rect.x);
+      tile.y = Math.round(rect.y);
       tile.placed = true;
-
-      placeElementFromGrid(tile);
-
+      tile.element.style.left = tile.x + 'px';
+      tile.element.style.top = tile.y + 'px';
       tile.element.classList.add('locked');
       tile.element.classList.remove('mini', 'in-hand', 'dragging');
-
       GAME.canvas.appendChild(tile.element);
       GAME.placed.push(tile);
-      resetEndpointsFromPlaced();
       return true;
     }
 
@@ -848,11 +675,9 @@
       tile.element.onpointerdown = (e) => {
         if (tile.placed) return;
         if (tile.player !== GAME.currentPlayer) return;
-
         e.preventDefault();
         tile.element.classList.add('dragging');
         GAME.canvas.appendChild(tile.element);
-
         const p = getCanvasPointer(e);
         const rect = tile.element.getBoundingClientRect();
         const vRect = GAME.viewport.getBoundingClientRect();
@@ -860,7 +685,6 @@
         const tileCanvasY = (rect.top - vRect.top - GAME.panY) / GAME.scale;
         const shiftX = p.x - tileCanvasX;
         const shiftY = p.y - tileCanvasY;
-
         showSnapsForDrag(tile);
 
         const move = (ev) => {
@@ -868,41 +692,33 @@
           tile.element.style.left = `${pp.x - shiftX}px`;
           tile.element.style.top = `${pp.y - shiftY}px`;
         };
-
         const up = (ev) => {
           window.removeEventListener('pointermove', move);
           window.removeEventListener('pointerup', up);
-
           tile.element.classList.remove('dragging');
           clearSnaps();
-
           const pp = getCanvasPointer(ev);
           const chosen = choosePlacement(tile, pp);
-
           if (!GAME.placed.length) {
-            tile.orientation = 'H';
-            tile.gx = Math.round(pp.x / GAME.CELL);
-            tile.gy = Math.round(pp.y / GAME.CELL);
+            tile.x = Math.round(pp.x);
+            tile.y = Math.round(pp.y);
             tile.placed = true;
+            tile.orientation = 'horizontal';
             tile.element.classList.remove('mini', 'in-hand', 'dragging');
             tile.element.classList.add('locked');
-            placeElementFromGrid(tile);
+            tile.element.style.left = tile.x + 'px';
+            tile.element.style.top = tile.y + 'px';
             GAME.canvas.appendChild(tile.element);
             GAME.placed.push(tile);
             GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
-            resetEndpointsFromPlaced();
             renderHands();
             return;
           }
-
-          if (chosen) {
-            placeTileAt(tile, chosen);
+          if (chosen && placeTileAt(tile, chosen.end, chosen.dir)) {
             GAME.hands[GAME.currentPlayer] = GAME.hands[GAME.currentPlayer].filter(t => t.id !== tile.id);
           }
-
           renderHands();
         };
-
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
       };
@@ -911,14 +727,11 @@
     function buildFaceEditor() {
       const wrap = document.getElementById('faceMap');
       wrap.innerHTML = '';
-
       Object.entries(FACE_LIBRARY).forEach(([key, item]) => {
         const row = document.createElement('div');
         row.className = 'face-item';
-
         const preview = document.createElement('div');
         preview.className = 'face-preview';
-
         if (item.src) {
           const img = document.createElement('img');
           img.src = item.src;
@@ -926,10 +739,8 @@
         } else {
           preview.textContent = item.value;
         }
-
         const controls = document.createElement('div');
         controls.innerHTML = `<div style="font-weight:700; margin-bottom:6px;">${item.label}</div>`;
-
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -944,7 +755,6 @@
           };
           reader.readAsDataURL(file);
         };
-
         controls.appendChild(input);
         row.append(preview, controls);
         wrap.appendChild(row);
@@ -961,7 +771,7 @@
     }
 
     function findTileById(id) {
-      for (const p of [1, 2]) {
+      for (const p of [1,2]) {
         const h = GAME.hands[p].find(t => t.id === id);
         if (h) return h;
       }
@@ -984,28 +794,24 @@
     }
 
     function restartGame() {
-      GAME.bank = shuffle(ALL_TILES).map(([a, b]) => createTile(a, b));
-      GAME.hands = { 1: [], 2: [] };
+      GAME.bank = shuffle(ALL_TILES).map(([a,b]) => createTile(a,b));
+      GAME.hands = {1: [], 2: []};
       GAME.placed = [];
-      GAME.endpoints = [];
       GAME.currentPlayer = 1;
       clearSnaps();
       GAME.canvas.querySelectorAll('.domino').forEach(el => el.remove());
-
       for (let i = 0; i < 5; i++) {
         const t1 = GAME.bank.pop();
         t1.player = 1;
         t1.element = createDominoElement(t1, true);
         enableDrag(t1);
         GAME.hands[1].push(t1);
-
         const t2 = GAME.bank.pop();
         t2.player = 2;
         t2.element = createDominoElement(t2, true);
         enableDrag(t2);
         GAME.hands[2].push(t2);
       }
-
       renderHands();
     }
 
@@ -1019,19 +825,10 @@
       GAME.canvas.style.transform = `translate(${GAME.panX}px, ${GAME.panY}px) scale(${GAME.scale})`;
     }
 
-    document.getElementById('zoomIn').onclick = () => {
-      GAME.scale = Math.min(1.8, +(GAME.scale + 0.1).toFixed(2));
-      renderPanZoom();
-    };
-
-    document.getElementById('zoomOut').onclick = () => {
-      GAME.scale = Math.max(0.6, +(GAME.scale - 0.1).toFixed(2));
-      renderPanZoom();
-    };
-
+    document.getElementById('zoomIn').onclick = () => { GAME.scale = Math.min(1.8, +(GAME.scale + 0.1).toFixed(2)); renderPanZoom(); };
+    document.getElementById('zoomOut').onclick = () => { GAME.scale = Math.max(0.6, +(GAME.scale - 0.1).toFixed(2)); renderPanZoom(); };
     document.getElementById('drawBtn').onclick = drawTile;
-    document.getElementById('passBtn').onclick = passTurn;
-    document.getElementById('shuffleBtn').onclick = shuffleHands;
+        document.getElementById('shuffleBtn').onclick = shuffleHands;
     document.getElementById('restartBtn').onclick = restartGame;
 
     GAME.viewport.addEventListener('pointerdown', (e) => {
@@ -1043,14 +840,12 @@
       GAME.startPanX = GAME.panX;
       GAME.startPanY = GAME.panY;
     });
-
     window.addEventListener('pointermove', (e) => {
       if (!GAME.panning) return;
       GAME.panX = GAME.startPanX + (e.clientX - GAME.pointerStartX);
       GAME.panY = GAME.startPanY + (e.clientY - GAME.pointerStartY);
       renderPanZoom();
     });
-
     window.addEventListener('pointerup', () => {
       GAME.panning = false;
       GAME.viewport.classList.remove('panning');
