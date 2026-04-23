@@ -231,13 +231,33 @@
 
     .snap-zone {
       position: absolute;
-      border: 2px solid var(--snap-color);
-      border-radius: 12px;
-      background: color-mix(in srgb, var(--snap-color) 10%, transparent);
+      border: 3px solid var(--snap-color);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--snap-color) 16%, white 84%);
       pointer-events: none;
       opacity: 0;
       transition: opacity .08s ease;
       z-index: 20;
+      box-shadow: 0 8px 18px rgba(108, 51, 255, .10);
+    }
+    .snap-zone::after {
+      content: '';
+      position: absolute;
+      background: color-mix(in srgb, var(--snap-color) 70%, #666 30%);
+      border-radius: 2px;
+      opacity: .9;
+    }
+    .snap-zone.horizontal::after {
+      width: 2px;
+      height: 72%;
+      left: calc(50% - 1px);
+      top: 14%;
+    }
+    .snap-zone.vertical::after {
+      width: 72%;
+      height: 2px;
+      left: 14%;
+      top: calc(50% - 1px);
     }
     .snap-zone.visible { opacity: 1; }
 
@@ -529,16 +549,15 @@
       GAME.activeSnaps = [];
     }
 
-    function addSnapZone(x, y, w, h) {
+    function addSnapZone(x, y, w, h, orientation) {
       const z = document.createElement('div');
-      z.className = 'snap-zone';
+      z.className = `snap-zone visible ${orientation}`;
       z.style.left = `${x}px`;
       z.style.top = `${y}px`;
       z.style.width = `${w}px`;
       z.style.height = `${h}px`;
       GAME.canvas.appendChild(z);
       GAME.activeSnaps.push(z);
-      requestAnimationFrame(() => z.classList.add('visible'));
     }
 
     function allowedDirections(side) {
@@ -561,10 +580,7 @@
         if (tile.a !== end.value && tile.b !== end.value) continue;
         for (const dir of allowedDirections(end.side)) {
           const rect = getPlacementRect(end, dir);
-          if (dir === 'right') addSnapZone(rect.x - GAME.snapThickness / 2, rect.y, GAME.snapThickness, rect.h);
-          if (dir === 'left') addSnapZone(rect.x + rect.w - GAME.snapThickness / 2, rect.y, GAME.snapThickness, rect.h);
-          if (dir === 'up') addSnapZone(rect.x, rect.y + rect.h - GAME.snapThickness / 2, rect.w, GAME.snapThickness);
-          if (dir === 'down') addSnapZone(rect.x, rect.y - GAME.snapThickness / 2, rect.w, GAME.snapThickness);
+          addSnapZone(rect.x, rect.y, rect.w, rect.h, rect.orientation);
         }
       }
     }
